@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors, must_be_immutable
 
 import 'dart:async';
 
@@ -109,17 +109,16 @@ class LoginPage extends StatelessWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         shape: StadiumBorder(),
-                        primary: Color(0xffa23673A),
                       ),
                       onPressed: () {
-                        Navigator.push(
+                        Navigator.pushAndRemoveUntil<dynamic>(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return HomeScreen(
-                                  category: category, user: 'ola');
-                            },
+                          MaterialPageRoute<dynamic>(
+                            builder: (BuildContext context) =>
+                                HomeScreen(category: category, user: 'ola'),
                           ),
+                          (route) =>
+                              false, //if you want to disable back feature set to false
                         );
                       },
                       child: Text(

@@ -54,7 +54,7 @@ class TransactionPage extends StatelessWidget {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return CardTransaction();
+                return const CardTransaction();
               },
               childCount: 100, // 1000 list items
             ),

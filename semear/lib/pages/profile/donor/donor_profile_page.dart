@@ -1,16 +1,10 @@
-// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors
-
-import 'dart:convert';
+// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:semear/pages/donor_donations.dart';
-import 'package:semear/pages/settings_menu.dart';
+import 'package:semear/pages/profile/donor/donor_donations_tab.dart';
+import 'package:semear/widgets/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
-import 'package:semear/widgets/donations_projects.dart';
-import 'package:semear/widgets/info_project.dart';
-import 'package:share/share.dart';
-import 'package:transparent_image/transparent_image.dart';
+import 'package:semear/pages/profile/project/info_project_tab.dart';
 
 class DonorProfilePage extends StatefulWidget {
   DonorProfilePage({super.key, required this.user, this.controller});
@@ -32,14 +26,6 @@ class _DonorProfilePageState extends State<DonorProfilePage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.animateTo(0);
-  }
-
-  _getGifs() async {
-    http.Response response;
-    response = await http.get(Uri.parse(
-        'https://api.giphy.com/v1/gifs/trending?api_key=mTjlHb8OsXPjnxkEZ283j3mQ0QIKvtgG&limit=20&rating=g'));
-
-    return json.decode(response.body);
   }
 
   @override
@@ -188,38 +174,11 @@ class _DonorProfilePageState extends State<DonorProfilePage>
             controller: _tabController,
             children: [
               DonationsDonor(),
-              InfoProject(),
+              InfoProject(category: 'missionary'),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  Widget _createGifTable(BuildContext context, AsyncSnapshot snapshot) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(10.0),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10.0,
-        mainAxisSpacing: 10,
-      ),
-      itemCount: 20,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-            child: FadeInImage.memoryNetwork(
-              placeholder: kTransparentImage,
-              image: snapshot.data["data"][index]["images"]["fixed_height"]
-                  ["url"],
-              height: 300.0,
-              fit: BoxFit.cover,
-            ),
-            onTap: () {},
-            onLongPress: () {
-              Share.share(snapshot.data["data"][index]["images"]["fixed_height"]
-                  ["url"]);
-            });
-      },
     );
   }
 }

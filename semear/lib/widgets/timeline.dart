@@ -1,9 +1,9 @@
-// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors
+// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
 import 'package:semear/widgets/post_container.dart';
 
-import '../pages/chat_page.dart';
+import '../pages/timeline/chat_page.dart';
 
 class TimeLine extends StatefulWidget {
   TimeLine({super.key, required this.controller, required this.user});

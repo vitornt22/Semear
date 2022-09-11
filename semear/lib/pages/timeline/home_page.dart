@@ -1,10 +1,10 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, unused_field
 
 import 'package:flutter/material.dart';
-import 'package:semear/pages/notifications%20_page.dart';
-import 'package:semear/pages/profile_project_page.dart';
+import 'package:semear/pages/timeline/notifications%20_page.dart';
+import 'package:semear/pages/profile/project/project_profile_page.dart';
 
-import '../widgets/timeline.dart';
+import '../../widgets/timeline.dart';
 
 // ignore: must_be_immutable
 class HomePage extends StatefulWidget {

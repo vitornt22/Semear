@@ -1,13 +1,19 @@
-// ignore_for_file: prefer_const_constructors
-
-import 'dart:ui';
+// ignore_for_file: prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
 import 'package:semear/widgets/button_filled.dart';
 import 'package:semear/widgets/column_text.dart';
 
 class InfoProject extends StatelessWidget {
-  const InfoProject({super.key});
+  InfoProject({super.key, required this.category});
+
+  String category;
+  Map title = {
+    'missionary': ['Quem sou eu?', 'Onde atuo?'],
+    'project': ['Quem somos nós?', 'Nosso Objetivo']
+  };
+
+  late List<String> list = title[category];
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +28,7 @@ class InfoProject extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ColumnText(
-                  title: 'Quem somos nós',
+                  title: list[0],
                   text:
                       'Somos o projeto Jesus Visitando Familias da Igreja Assembleia de Deus Missao em Fronteiras-PI, fundado em 2021. ',
                 ),
@@ -37,7 +43,7 @@ class InfoProject extends StatelessWidget {
                 ),
                 SizedBox(height: 10),
                 ColumnText(
-                  title: 'Nosso Objetivo',
+                  title: list[1],
                   text:
                       ' O nosso principal objetivo é sair às ruas para proclamar as boas novas de salvação e levar o amor de Jesus para vida carentes.Através das doações levamos alimentos, cobertores e mantimentos para ao menos amenizar o sofrimento daqueles que se encontram em situações assim.',
                 ),

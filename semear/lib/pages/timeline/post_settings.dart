@@ -7,8 +7,8 @@ class PostSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton(
       elevation: 50,
-      color: Color.fromARGB(255, 245, 239, 239),
-      icon: Icon(Icons.more_vert),
+      color: const Color.fromARGB(255, 245, 239, 239),
+      icon: const Icon(Icons.more_vert),
       itemBuilder: (BuildContext context) => <PopupMenuEntry>[
         const PopupMenuItem(
           child: ListTile(

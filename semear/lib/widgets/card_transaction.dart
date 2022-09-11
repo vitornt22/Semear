@@ -1,3 +1,5 @@
+// ignore_for_file: use_full_hex_values_for_flutter_colors, unnecessary_const
+
 import 'package:flutter/material.dart';
 
 class CardTransaction extends StatelessWidget {
@@ -65,8 +67,7 @@ class CardTransaction extends StatelessWidget {
                   children: const [
                     Text(
                       '1000,00',
-                      style: TextStyle(
-                          color: const Color(0xffa23673A), fontSize: 30),
+                      style: TextStyle(color: Color(0xffa23673A), fontSize: 30),
                     ),
                     Icon(
                       Icons.monetization_on,

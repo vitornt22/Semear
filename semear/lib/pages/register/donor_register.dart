@@ -1,11 +1,8 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors
 
 import 'package:flutter/material.dart';
-import 'package:semear/pages/home_screen.dart';
 import 'package:semear/pages/login_page.dart';
 import 'package:semear/widgets/forms_field.dart';
-
-import 'church_forms.dart';
 
 class DonorRegister extends StatefulWidget {
   const DonorRegister({super.key});
@@ -15,7 +12,9 @@ class DonorRegister extends StatefulWidget {
 }
 
 class _DonorRegisterState extends State<DonorRegister> {
-  int _currentStep = 0;
+  final int _currentStep = 0;
+
+  TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -60,26 +59,36 @@ class _DonorRegisterState extends State<DonorRegister> {
                         children: [
                           SizedBox(height: 100),
                           FormsField(
+                            keyboard: TextInputType.text,
+                            controller: controller,
                             label: 'Nome Completo',
                             hintText: 'ex: Francisca da Silva Feitosa',
                             sizeBoxHeigth: 10,
                           ),
                           FormsField(
+                            keyboard: TextInputType.text,
+                            controller: controller,
                             label: 'Email',
                             hintText: 'ex: osvaldovieira@gmail.com',
                             sizeBoxHeigth: 10,
                           ),
                           FormsField(
+                            keyboard: TextInputType.text,
+                            controller: controller,
                             label: 'Nome de Usuário',
                             hintText: 'ex: osvaldovieira',
                             sizeBoxHeigth: 10,
                           ),
                           FormsField(
+                            keyboard: TextInputType.text,
+                            controller: controller,
                             label: 'Senha',
                             hintText: 'ex: osvaldovieira@gmail.com',
                             sizeBoxHeigth: 10,
                           ),
                           FormsField(
+                            keyboard: TextInputType.text,
+                            controller: controller,
                             label: 'Confirmar Senha',
                             hintText: 'ex: osvaldovieira@gmail.com',
                             sizeBoxHeigth: 10,

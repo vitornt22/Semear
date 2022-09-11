@@ -1,21 +1,17 @@
-// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors
-
-import 'dart:convert';
+// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:semear/pages/church_list_validation.dart';
-import 'package:semear/pages/missionary_tab.dart';
-import 'package:semear/pages/settings_menu.dart';
+import 'package:semear/pages/profile/church/church_list_validation_tab.dart';
+import 'package:semear/widgets/button_outlined_profile.dart';
+import 'package:semear/widgets/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
-import 'package:share/share.dart';
-import 'package:transparent_image/transparent_image.dart';
+
+import 'missionary_tab.dart';
 
 class ChurchProfilePage extends StatefulWidget {
-  ChurchProfilePage({super.key, required this.user, this.controller});
+  ChurchProfilePage({super.key, required this.user});
 
   String user;
-  PageController? controller;
 
   @override
   State<ChurchProfilePage> createState() => _ChurchProfilePageState();
@@ -33,14 +29,6 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
     _tabController.animateTo(0);
   }
 
-  _getGifs() async {
-    http.Response response;
-    response = await http.get(Uri.parse(
-        'https://api.giphy.com/v1/gifs/trending?api_key=mTjlHb8OsXPjnxkEZ283j3mQ0QIKvtgG&limit=20&rating=g'));
-
-    return json.decode(response.body);
-  }
-
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
@@ -50,9 +38,7 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
             visible: widget.user == 'me' ? false : true,
             child: IconButton(
               onPressed: () {
-                if (widget.controller != null) {
-                  widget.controller!.jumpToPage(0);
-                }
+                Navigator.pop(context);
               },
               icon: Icon(Icons.arrow_back, color: Colors.black),
             ),
@@ -175,12 +161,15 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: ButtonFilled(text: 'Admiradores', onClick: () {}),
-                    ),
-                    Expanded(
                       child: ButtonFilled(
-                        onClick: () {},
-                        text: 'Seguindo',
+                          text: 'Projetos que sigo', onClick: () {}),
+                    ),
+                    Visibility(
+                      child: Expanded(
+                        child: ButtonOutlinedProfile(
+                          onClick: () {},
+                          text: 'Seguir Projetos',
+                        ),
                       ),
                     ),
                   ],
@@ -244,7 +233,32 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
                   itemCount: 3,
                   itemBuilder: (context, index) {
                     return GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (BuildContext context) {
+                              return Scaffold(
+                                bottomSheet: Container(
+                                  color: Colors.white,
+                                  width: double.infinity,
+                                  height: 80,
+                                  child: ButtonFilled(
+                                    text: 'Voltar ao meu perfil',
+                                    onClick: () {
+                                      Navigator.of(context)
+                                          .popUntil((route) => route.isFirst);
+                                    },
+                                  ),
+                                ),
+                                body: ChurchProfilePage(
+                                  user: 'follower',
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                       child: Stack(
                         children: [
                           Image.asset('assets/images/folder.png'),
@@ -282,33 +296,6 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _createGifTable(BuildContext context, AsyncSnapshot snapshot) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(10.0),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10.0,
-        mainAxisSpacing: 10,
-      ),
-      itemCount: 20,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-            child: FadeInImage.memoryNetwork(
-              placeholder: kTransparentImage,
-              image: snapshot.data["data"][index]["images"]["fixed_height"]
-                  ["url"],
-              height: 300.0,
-              fit: BoxFit.cover,
-            ),
-            onTap: () {},
-            onLongPress: () {
-              Share.share(snapshot.data["data"][index]["images"]["fixed_height"]
-                  ["url"]);
-            });
-      },
     );
   }
 }

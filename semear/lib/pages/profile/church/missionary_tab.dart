@@ -9,7 +9,7 @@ class MissionaryTab extends StatelessWidget {
       color: Colors.white,
       child: ListView.separated(
           separatorBuilder: (context, index) {
-            return Divider();
+            return const Divider();
           },
           itemCount: 40,
           itemBuilder: (context, index) {

@@ -1,18 +1,18 @@
-// ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors
+// ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors, must_be_immutable
 
 import 'package:flutter/material.dart';
 import 'package:semear/widgets/grid_search.dart';
-import 'package:semear/widgets/top_projects.dart';
+import 'package:semear/pages/search/top_projects.dart';
 
-class TabBarProjects extends StatefulWidget {
-  TabBarProjects({super.key, required this.controller});
+class ProjectsPage extends StatefulWidget {
+  ProjectsPage({super.key, required this.controller});
 
   PageController controller;
   @override
-  State<TabBarProjects> createState() => _TabBarProjectsState();
+  State<ProjectsPage> createState() => _ProjectsPageState();
 }
 
-class _TabBarProjectsState extends State<TabBarProjects>
+class _ProjectsPageState extends State<ProjectsPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
@@ -29,7 +29,6 @@ class _TabBarProjectsState extends State<TabBarProjects>
       backgroundColor: const Color.fromARGB(255, 224, 211, 211),
       appBar: AppBar(
         leading: SizedBox(),
-        // ignore: use_full_hex_values_for_flutter_colors
         backgroundColor: const Color(0xffa23673A),
         centerTitle: true,
         title: Padding(

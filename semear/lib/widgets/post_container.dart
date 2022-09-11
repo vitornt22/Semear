@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:semear/widgets/comments.dart';
 import 'package:semear/widgets/head_post.dart';
-import 'package:semear/widgets/post_stats.dart';
 
 // ignore: must_be_immutable
 class PostContainer extends StatefulWidget {

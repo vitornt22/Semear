@@ -1,8 +1,6 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:share/share.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 class GridSearch extends StatelessWidget {
   GridSearch({super.key, required this.controller});

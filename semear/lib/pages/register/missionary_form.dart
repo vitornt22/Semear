@@ -11,6 +11,8 @@ class InfoMissionaryForm extends StatefulWidget {
 }
 
 class _InfoMissionaryFormState extends State<InfoMissionaryForm> {
+  TextEditingController controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -19,31 +21,43 @@ class _InfoMissionaryFormState extends State<InfoMissionaryForm> {
         children: [
           SizedBox(height: 50),
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Nome Completo',
             hintText: 'ex: Francisca da Silva Feitosa',
             sizeBoxHeigth: 10,
           ),
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Igreja',
             hintText: 'ex: Assembleia de Deus',
             sizeBoxHeigth: 10,
           ),
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Email',
             hintText: 'ex: osvaldovieira@gmail.com',
             sizeBoxHeigth: 10,
           ),
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Nome de Usuário',
             hintText: 'ex: osvaldovieira',
             sizeBoxHeigth: 10,
           ),
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Senha',
             hintText: 'ex: osvaldovieira@gmail.com',
             sizeBoxHeigth: 10,
           ),
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Confirmar Senha',
             hintText: 'ex: osvaldovieira@gmail.com',
             sizeBoxHeigth: 10,
@@ -62,6 +76,7 @@ class DataMissionaryForm extends StatefulWidget {
 }
 
 class _DataMissionaryFormState extends State<DataMissionaryForm> {
+  TextEditingController controller = TextEditingController();
   bool? checkedValue = true;
   @override
   Widget build(BuildContext context) {
@@ -72,6 +87,8 @@ class _DataMissionaryFormState extends State<DataMissionaryForm> {
           Column(
             children: [
               FormsField(
+                keyboard: TextInputType.text,
+                controller: controller,
                 label: 'CEP',
                 hintText: 'ex: 64690-000',
                 sizeBoxHeigth: 10,
@@ -81,6 +98,8 @@ class _DataMissionaryFormState extends State<DataMissionaryForm> {
                   Expanded(
                     flex: 4,
                     child: FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'Endereço',
                       hintText: 'ex: Rua.Odomirio Ribeiro',
                       sizeBoxHeigth: 10,
@@ -89,6 +108,8 @@ class _DataMissionaryFormState extends State<DataMissionaryForm> {
                   SizedBox(width: 5),
                   Expanded(
                     child: FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'Nº',
                       hintText: 'ex: 217',
                       sizeBoxHeigth: 10,
@@ -101,6 +122,8 @@ class _DataMissionaryFormState extends State<DataMissionaryForm> {
                   Expanded(
                     flex: 5,
                     child: FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'Cidade',
                       hintText: 'ex: Rua.Odomirio Ribeiro',
                       sizeBoxHeigth: 10,
@@ -109,6 +132,8 @@ class _DataMissionaryFormState extends State<DataMissionaryForm> {
                   SizedBox(width: 5),
                   Expanded(
                     child: FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'UF',
                       hintText: 'ex: PI',
                       sizeBoxHeigth: 10,
@@ -121,6 +146,8 @@ class _DataMissionaryFormState extends State<DataMissionaryForm> {
                   Expanded(
                     flex: 2,
                     child: FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'Bairro',
                       hintText: 'ex: Bela Vista',
                       sizeBoxHeigth: 10,
@@ -129,6 +156,8 @@ class _DataMissionaryFormState extends State<DataMissionaryForm> {
                   SizedBox(width: 5),
                   Expanded(
                     child: FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'Fundação',
                       hintText: 'ex: 22/07/1992',
                       sizeBoxHeigth: 10,
@@ -144,8 +173,15 @@ class _DataMissionaryFormState extends State<DataMissionaryForm> {
   }
 }
 
-class DataBankForm extends StatelessWidget {
+class DataBankForm extends StatefulWidget {
   const DataBankForm({super.key});
+
+  @override
+  State<DataBankForm> createState() => _DataBankFormState();
+}
+
+class _DataBankFormState extends State<DataBankForm> {
+  TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -176,16 +212,22 @@ class DataBankForm extends StatelessWidget {
                       color: Colors.green,
                     ),
                     FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'Nome do Titular',
                       hintText: 'Ex: Joao Gomes da Silva',
                       sizeBoxHeigth: 10,
                     ),
                     FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'CPF/CNPJ',
                       hintText: 'Digite o CPF OU CNPJ',
                       sizeBoxHeigth: 10,
                     ),
                     FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'Banco',
                       hintText: 'Digite o CPF OU CNPJ',
                       sizeBoxHeigth: 10,
@@ -195,6 +237,8 @@ class DataBankForm extends StatelessWidget {
                         Expanded(
                           flex: 4,
                           child: FormsField(
+                            keyboard: TextInputType.text,
+                            controller: controller,
                             label: 'Agência',
                             sizeBoxHeigth: 10,
                           ),
@@ -202,6 +246,8 @@ class DataBankForm extends StatelessWidget {
                         SizedBox(width: 5),
                         Expanded(
                           child: FormsField(
+                            keyboard: TextInputType.text,
+                            controller: controller,
                             label: 'Digito',
                             sizeBoxHeigth: 10,
                           ),
@@ -213,12 +259,16 @@ class DataBankForm extends StatelessWidget {
                         Expanded(
                           flex: 4,
                           child: FormsField(
+                            keyboard: TextInputType.text,
+                            controller: controller,
                             label: 'Conta',
                           ),
                         ),
                         SizedBox(width: 5),
                         Expanded(
                           child: FormsField(
+                            keyboard: TextInputType.text,
+                            controller: controller,
                             label: 'Digito',
                           ),
                         ),
@@ -254,10 +304,14 @@ class DataBankForm extends StatelessWidget {
                       color: Colors.green,
                     ),
                     FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'Tipo de Chave ',
                       sizeBoxHeigth: 10,
                     ),
                     FormsField(
+                      keyboard: TextInputType.text,
+                      controller: controller,
                       label: 'Valor da Chave',
                       sizeBoxHeigth: 10,
                     ),

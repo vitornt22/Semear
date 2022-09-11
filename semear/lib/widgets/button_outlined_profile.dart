@@ -2,22 +2,22 @@
 
 import 'package:flutter/material.dart';
 
-class ButtonFilled extends StatefulWidget {
-  ButtonFilled({super.key, required this.text, required this.onClick});
+class ButtonOutlinedProfile extends StatefulWidget {
+  ButtonOutlinedProfile({super.key, required this.text, required this.onClick});
 
   Function onClick;
   String text;
 
   @override
-  State<ButtonFilled> createState() => _ButtonFilledState();
+  State<ButtonOutlinedProfile> createState() => _ButtonOutlinedProfileState();
 }
 
-class _ButtonFilledState extends State<ButtonFilled> {
+class _ButtonOutlinedProfileState extends State<ButtonOutlinedProfile> {
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(15),
-      child: ElevatedButton(
+      child: OutlinedButton(
         onPressed: () {
           if (widget.text == 'Seguir') {
             setState(() {
@@ -32,24 +32,22 @@ class _ButtonFilledState extends State<ButtonFilled> {
           }
         },
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(
-            widget.text != "Seguir" ? Color(0xffa23673a) : Colors.transparent,
-          ),
-          shadowColor: MaterialStateProperty.all<Color>(
-            widget.text != "Seguir" ? Color(0xffa23673a) : Colors.transparent,
-          ),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
-                side: const BorderSide(color: Color(0xffa23673a)),
+                side: const BorderSide(color: Color(0xffa23673a), width: 3),
                 borderRadius: BorderRadius.circular(18)),
           ),
         ),
-        child: Text(
-          widget.text,
-          style: TextStyle(
-            color: widget.text != "Seguir" ? Colors.white : Color(0xffa23673a),
+        child: Row(children: [
+          Icon(Icons.add, color: Color(0xffa23673a)),
+          SizedBox(width: 2),
+          Text(
+            widget.text,
+            style: TextStyle(
+              color: Color(0xffa23673a),
+            ),
           ),
-        ),
+        ]),
       ),
     );
   }

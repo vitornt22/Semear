@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors
 
-import 'package:flutter/material.dart';
-import 'package:semear/pages/home_screen.dart';
 import 'package:semear/pages/login_page.dart';
 import 'package:semear/pages/register/project_forms.dart';
-
-import 'church_forms.dart';
 
 class ProjectRegister extends StatefulWidget {
   const ProjectRegister({super.key});

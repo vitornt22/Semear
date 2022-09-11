@@ -11,6 +11,8 @@ class ValidationProjectForm extends StatefulWidget {
 }
 
 class _ValidationProjectFormState extends State<ValidationProjectForm> {
+  TextEditingController controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -19,14 +21,20 @@ class _ValidationProjectFormState extends State<ValidationProjectForm> {
       children: [
         SizedBox(height: 50),
         FormsField(
+          keyboard: TextInputType.text,
+          controller: controller,
           label: 'Nome',
           hintText: 'ex: 11.111.111/0001-11',
         ),
         FormsField(
+          keyboard: TextInputType.text,
+          controller: controller,
           label: 'Denominação',
           hintText: 'ex: Assembleia de Deus',
         ),
         FormsField(
+          keyboard: TextInputType.text,
+          controller: controller,
           label: 'Ministério',
           hintText: 'ex: Missão',
         )
@@ -44,6 +52,9 @@ class ContactProjectForm extends StatefulWidget {
 
 class _ContactProjectFormState extends State<ContactProjectForm> {
   bool? checkedValue = true;
+
+  TextEditingController controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -51,20 +62,28 @@ class _ContactProjectFormState extends State<ContactProjectForm> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Email',
             hintText: 'ex: semear@gmail.com',
             sizeBoxHeigth: 10,
           ),
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Nome de Usuário',
             hintText: 'ex: semear123',
             sizeBoxHeigth: 10,
           ),
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Senha',
             sizeBoxHeigth: 10,
           ),
           FormsField(
+            keyboard: TextInputType.text,
+            controller: controller,
             label: 'Confirmar Senha',
             sizeBoxHeigth: 10,
           ),
@@ -72,6 +91,8 @@ class _ContactProjectFormState extends State<ContactProjectForm> {
             children: [
               Expanded(
                 child: FormsField(
+                  keyboard: TextInputType.text,
+                  controller: controller,
                   label: 'Contato',
                   hintText: 'ex: (89)99929-2922',
                   sizeBoxHeigth: 5,
@@ -101,6 +122,8 @@ class _ContactProjectFormState extends State<ContactProjectForm> {
                     Column(
                       children: [
                         FormsField(
+                          keyboard: TextInputType.text,
+                          controller: controller,
                           label: 'CEP',
                           hintText: 'ex: 64690-000',
                           sizeBoxHeigth: 10,
@@ -110,6 +133,8 @@ class _ContactProjectFormState extends State<ContactProjectForm> {
                             Expanded(
                               flex: 4,
                               child: FormsField(
+                                keyboard: TextInputType.text,
+                                controller: controller,
                                 label: 'Endereço',
                                 hintText: 'ex: Rua.Odomirio Ribeiro',
                                 sizeBoxHeigth: 10,
@@ -118,6 +143,8 @@ class _ContactProjectFormState extends State<ContactProjectForm> {
                             SizedBox(width: 5),
                             Expanded(
                               child: FormsField(
+                                keyboard: TextInputType.text,
+                                controller: controller,
                                 label: 'Nº',
                                 hintText: 'ex: 217',
                                 sizeBoxHeigth: 10,
@@ -130,6 +157,8 @@ class _ContactProjectFormState extends State<ContactProjectForm> {
                             Expanded(
                               flex: 5,
                               child: FormsField(
+                                keyboard: TextInputType.text,
+                                controller: controller,
                                 label: 'Cidade',
                                 hintText: 'ex: Rua.Odomirio Ribeiro',
                                 sizeBoxHeigth: 10,
@@ -138,6 +167,8 @@ class _ContactProjectFormState extends State<ContactProjectForm> {
                             SizedBox(width: 5),
                             Expanded(
                               child: FormsField(
+                                keyboard: TextInputType.text,
+                                controller: controller,
                                 label: 'UF',
                                 hintText: 'ex: PI',
                                 sizeBoxHeigth: 10,
@@ -150,6 +181,8 @@ class _ContactProjectFormState extends State<ContactProjectForm> {
                             Expanded(
                               flex: 2,
                               child: FormsField(
+                                keyboard: TextInputType.text,
+                                controller: controller,
                                 label: 'Bairro',
                                 hintText: 'ex: Bela Vista',
                                 sizeBoxHeigth: 10,
@@ -158,6 +191,8 @@ class _ContactProjectFormState extends State<ContactProjectForm> {
                             SizedBox(width: 5),
                             Expanded(
                               child: FormsField(
+                                keyboard: TextInputType.text,
+                                controller: controller,
                                 label: 'Fundação',
                                 hintText: 'ex: 22/07/1992',
                                 sizeBoxHeigth: 10,

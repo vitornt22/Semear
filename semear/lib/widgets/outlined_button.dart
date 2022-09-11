@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
 
@@ -49,13 +49,13 @@ class OutlinedButtonGenerator extends StatelessWidget {
             if (icon != null)
               Icon(
                 icon,
-                color: color != null ? color : Colors.white,
+                color: color ?? Colors.white,
               ),
             SizedBox(width: 10),
             Text(
               text,
               style: TextStyle(
-                  color: color != null ? color : Colors.white,
+                  color: color ?? Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.w800),
             ),

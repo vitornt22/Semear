@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:semear/widgets/button_filled.dart';
-import 'package:semear/widgets/donations_projects.dart';
-
-import '../widgets/card_transaction.dart';
+import 'package:semear/widgets/card_transaction.dart';
 
 class DonationsDonor extends StatelessWidget {
   const DonationsDonor({super.key});
@@ -16,8 +13,8 @@ class DonationsDonor extends StatelessWidget {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 3),
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 3),
                   child: CardTransaction(),
                 );
               },

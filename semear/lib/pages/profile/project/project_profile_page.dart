@@ -1,13 +1,13 @@
-// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors
+// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:semear/pages/settings_menu.dart';
+import 'package:semear/widgets/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
-import 'package:semear/widgets/donations_projects.dart';
-import 'package:semear/widgets/info_project.dart';
+import 'package:semear/pages/profile/project/donations_projects_tab.dart';
+import 'package:semear/pages/profile/project/info_project_tab.dart';
 import 'package:share/share.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -251,7 +251,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                 },
               ),
               DonationsProject(),
-              InfoProject(),
+              InfoProject(category: 'project'),
             ],
           ),
         ),

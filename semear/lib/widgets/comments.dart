@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_unnecessary_containers, avoid_print, prefer_const_constructors
+// ignore_for_file: avoid_unnecessary_containers, avoid_print, prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
 
@@ -41,7 +41,6 @@ class _CommentsState extends State<Comments> {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
-                    final int itemIndex = index ~/ 2;
                     if (index.isEven) {
                       return Padding(
                         padding: const EdgeInsets.all(10),

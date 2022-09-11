@@ -1,9 +1,7 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:semear/pages/post_settings.dart';
-import 'package:semear/pages/profile_project_page.dart';
-import 'package:semear/widgets/outlined_button.dart';
+import 'package:semear/pages/timeline/post_settings.dart';
 import 'package:semear/widgets/sugestion_avatar.dart';
 
 class HeadPost extends StatefulWidget {

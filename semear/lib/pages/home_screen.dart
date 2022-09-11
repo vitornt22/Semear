@@ -1,13 +1,13 @@
-// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors
+// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:semear/pages/church_profile_page.dart';
-import 'package:semear/pages/donor_profile_page.dart';
-import 'package:semear/pages/home_page.dart';
-import 'package:semear/pages/profile_project_page.dart';
-import 'package:semear/pages/projects_page.dart';
-import 'package:semear/pages/register/church_register.dart';
-import 'package:semear/pages/transaction_page.dart';
+import 'package:semear/pages/profile/donor/donor_profile_page.dart';
+import 'package:semear/pages/profile/missionary/missionary_profile_page.dart';
+import 'package:semear/pages/timeline/home_page.dart';
+import 'package:semear/pages/profile/church/church_profile_page.dart';
+import 'package:semear/pages/profile/project/project_profile_page.dart';
+import 'package:semear/pages/search/projects_page.dart';
+import 'package:semear/pages/transaction/transaction_page.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({super.key, required this.category, required this.user});
@@ -22,10 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
   late PageController _pageController;
   int _page = 0;
 
-  Map<String, dynamic> category = {
+  Map<String, dynamic> pages = {
     'church': ChurchProfilePage(user: 'me'),
     'project': ProfileProjectPage(user: 'me'),
-    'missionary': ProfileProjectPage(user: 'me'),
+    'missionary': ProfileMissionaryPage(user: 'me'),
     'donor': DonorProfilePage(user: 'me'),
   };
 
@@ -96,11 +96,11 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           children: <Widget>[
             HomePage(user: 'ola'),
-            const ProjectsPage(),
+            ProjectsPage(controller: _pageController),
             Container(color: const Color(0xffa23673A)),
             const TransactionPage(),
             widget.category != 'AnonymousDonor'
-                ? category[widget.category]
+                ? pages[widget.category]
                 : SizedBox()
           ],
         ),

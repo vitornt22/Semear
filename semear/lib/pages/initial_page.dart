@@ -51,7 +51,7 @@ class InitialPage extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) {
                             return LoginPage(
-                              category: '',
+                              category: 'project',
                             );
                           },
                         ),
@@ -73,7 +73,7 @@ class InitialPage extends StatelessWidget {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: StadiumBorder(),
-                      primary: Colors.white,
+                      backgroundColor: Colors.white,
                     ),
                     onPressed: () {
                       Navigator.push(
@@ -97,7 +97,7 @@ class InitialPage extends StatelessWidget {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: StadiumBorder(),
-                      primary: Color.fromARGB(255, 0, 93, 3),
+                      backgroundColor: Color.fromARGB(255, 0, 93, 3),
                     ),
                     onPressed: () {
                       Navigator.push(

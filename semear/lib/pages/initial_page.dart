@@ -51,6 +51,7 @@ class InitialPage extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) {
                             return LoginPage(
+                              is_register: false,
                               category: 'project',
                             );
                           },

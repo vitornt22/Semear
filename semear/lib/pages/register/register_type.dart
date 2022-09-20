@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors
 
 import 'package:flutter/material.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:semear/pages/register/church_register.dart';
 import 'package:semear/pages/register/donor_register.dart';
 import 'package:semear/pages/register/missionary_register.dart';

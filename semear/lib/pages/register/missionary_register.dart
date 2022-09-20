@@ -1,9 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:semear/apis/api_form_validation.dart';
+import 'package:semear/models/missionary_model..dart';
 
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors
 
 import 'package:semear/pages/login_page.dart';
-import 'package:semear/pages/register/missionary_form.dart';
+import 'package:semear/pages/register/formsFields/city_state_field.dart';
+import 'package:semear/pages/register/formsFields/fields_class.dart';
+import 'package:semear/pages/register/validations.dart';
+import 'package:semear/widgets/circular_progress.dart';
+import 'package:semear/widgets/erroScreen.dart';
+
+ApiForm apiForm = ApiForm();
+Validations validations = Validations();
 
 class MissionaryRegister extends StatefulWidget {
   const MissionaryRegister({super.key});
@@ -14,6 +26,78 @@ class MissionaryRegister extends StatefulWidget {
 
 class _MissionaryRegisterState extends State<MissionaryRegister> {
   int _currentStep = 0;
+
+  TextEditingController fullNameController = TextEditingController();
+  TextEditingController churchController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
+  TextEditingController contactController = TextEditingController();
+  TextEditingController zipCodeController = TextEditingController();
+  TextEditingController adressController = TextEditingController();
+  TextEditingController numberController = TextEditingController();
+  TextEditingController cityController = TextEditingController();
+  TextEditingController stateController = TextEditingController();
+  TextEditingController districtController = TextEditingController();
+
+  //PROVISORIO
+  //bank
+  TextEditingController titularNamecontroller = TextEditingController();
+  TextEditingController agencyController = TextEditingController();
+  TextEditingController agencyDigitController = TextEditingController();
+  TextEditingController accountController = TextEditingController();
+  TextEditingController accountDigitController = TextEditingController();
+  TextEditingController bankController = TextEditingController();
+  // PI
+  TextEditingController keyTypeController = TextEditingController();
+  TextEditingController keyValueController = TextEditingController();
+  Future<Missionary?>? _futureMissionary;
+
+  bool showProgress = false;
+  String? dropdownValue;
+  Map? adressMap;
+  int idAdress = 0;
+  late int idChurch;
+
+  bool checkedValue = true;
+
+  Future<Missionary?>? submitData() async {
+    print("ADRESS MAP: $adressMap");
+
+    print('CHURCH: $idChurch');
+    http.Response response = await http.post(
+      Uri.parse('https://backend-semear.herokuapp.com/missionary/api/'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "user": {
+          "username": usernameController.text,
+          "email": emailController.text,
+          "category": "missionary",
+          "can_post": true,
+          "password": passwordController.text
+        },
+        "churchAdress": checkedValue,
+        "fullName": fullNameController.text,
+        "id_adress": idAdress,
+        "church": idChurch,
+        "adress": adressMap
+      }),
+    );
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return Missionary.fromJson(json.decode(response.body));
+    } else {
+      print("STATUS CODE ${response.statusCode}");
+      throw Exception('Falha ao registrar');
+    }
+  }
+
+  final List<GlobalKey<FormState>> _formKey = [
+    GlobalKey<FormState>(),
+    GlobalKey<FormState>(),
+  ];
+
+  late Future<Map<String, dynamic>> cep;
 
   @override
   Widget build(BuildContext context) {
@@ -64,44 +148,141 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
                         }
                       },
                       onStepContinue: () {
-                        if (_currentStep < 3) {
-                          setState(() {
-                            _currentStep++;
-                          });
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return LoginPage(
-                                  category: 'missionary',
-                                  redirect: 'initial',
-                                );
-                              },
-                            ),
-                          );
+                        print('Checked= $checkedValue');
+
+                        if (_formKey[_currentStep].currentState!.validate()) {
+                          switch (_currentStep) {
+                            case 0:
+                              int cont = 0;
+
+                              setState(() {
+                                showProgress = true;
+                              });
+
+                              apiForm
+                                  .checkEmail(emailController.text)
+                                  .then((value) async {
+                                if (value == true) {
+                                  emailController.text = 'email existente';
+                                } else {
+                                  setState(() {
+                                    cont++;
+                                  });
+                                }
+
+                                apiForm
+                                    .checkUsername(usernameController.text)
+                                    .then((value) {
+                                  if (value == true) {
+                                    usernameController.text =
+                                        'Nome de usuário já existe';
+                                  } else {
+                                    setState(() {
+                                      cont++;
+                                    });
+                                  }
+
+                                  apiForm
+                                      .checkCnpj(churchController.text)
+                                      .then((value) {
+                                    if (value == false) {
+                                      churchController.text =
+                                          'Igreja não existe!';
+                                    } else {
+                                      cont++;
+                                    }
+
+                                    if (cont == 3) {
+                                      setState(() {
+                                        _currentStep++;
+                                      });
+                                    }
+                                    setState(() {
+                                      showProgress = false;
+                                    });
+                                  });
+                                });
+                              });
+
+                              break;
+                            case 1:
+                              setState(() {
+                                showProgress = true;
+                              });
+                              if (checkedValue == true) {
+                                apiForm
+                                    .getChurch(churchController.text)
+                                    .then((value) {
+                                  setState(() {
+                                    print(value);
+                                    idAdress = value['adress']['id'];
+                                    idChurch = value['id'];
+                                  });
+                                });
+                              } else {
+                                setState(() {
+                                  adressMap = {
+                                    "adress": {
+                                      "zip_code": zipCodeController.text,
+                                      "adress": adressController.text,
+                                      "number": numberController.text,
+                                      "city": cityController.text,
+                                      "uf": stateController.text,
+                                      "district": districtController.text
+                                    }
+                                  };
+                                });
+                              }
+
+                              _futureMissionary = submitData();
+                              setState(() {
+                                showProgress = false;
+                              });
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return FutureBuilder<Missionary?>(
+                                      future: _futureMissionary,
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasData) {
+                                          return LoginPage(
+                                            category: "missionary",
+                                            is_register: true,
+                                          );
+                                        } else if (snapshot.hasError) {
+                                          return ErrorScreen(
+                                            text: '${snapshot.error}',
+                                          );
+                                        }
+
+                                        return LoadingScreen();
+                                      },
+                                    );
+                                  },
+                                ),
+                              );
+                              break;
+                          }
                         }
                       },
                       steps: [
                         Step(
                           isActive: _currentStep >= 0,
                           title: Text("Informações"),
-                          content: InfoMissionaryForm(),
+                          content: Form(
+                            key: _formKey[0],
+                            child: infoMissionaryForm(),
+                          ),
                         ),
                         Step(
                           isActive: _currentStep >= 1,
                           title: Text("Endereço"),
-                          content: DataMissionaryForm(),
-                        ),
-                        Step(
-                          isActive: _currentStep >= 2,
-                          title: Text("Dados bancários"),
-                          content: DataBankForm(),
-                        ),
-                        Step(
-                          isActive: _currentStep >= 3,
-                          title: Text("Perfil"),
-                          content: ProfileMissionaryForm(),
+                          content: Form(
+                            key: _formKey[1],
+                            child: addresForm(),
+                          ),
                         ),
                       ],
                     ),
@@ -111,6 +292,169 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget infoMissionaryForm() {
+    return SingleChildScrollView(
+      child: Stack(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FieldClass(
+                controller: fullNameController,
+                id: 'basic',
+                hint: 'Ex: Antonio José Alves',
+                label: 'Nome Completo',
+              ),
+              FieldClass(controller: emailController, id: 'email'),
+              //MODIFICAR PARA CHECAR SE EXISTE
+              FieldClass(
+                controller: usernameController,
+                id: 'basic',
+                label: 'Nome de Usuário',
+                hint: 'ex:semear123',
+              ),
+              FieldClass(
+                controller: churchController,
+                id: 'church',
+              ),
+              FieldClass(
+                controller: passwordController,
+                id: 'password',
+              ),
+              FieldClass(
+                controller: confirmPasswordController,
+                id: 'password',
+                label: 'Confirma Senha',
+                validator: (text) {
+                  text = confirmPasswordController.text;
+                  String text2 = passwordController.text;
+                  if (text.length != text2.length || text != text2) {
+                    return "Senhas não coincidem";
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+          Visibility(
+              visible: showProgress,
+              child: Center(
+                heightFactor: 15,
+                child: CircularProgressIndicator(),
+              ))
+        ],
+      ),
+    );
+  }
+
+  Widget addresForm() {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CheckboxListTile(
+            activeColor: Colors.green,
+            title: Text("Usar Endereço da Igreja"),
+            contentPadding: EdgeInsets.all(2),
+            value: checkedValue,
+            onChanged: (newValue) {
+              setState(() {
+                checkedValue = newValue!;
+              });
+            },
+            controlAffinity:
+                ListTileControlAffinity.leading, //  <-- leading Checkbox
+          ),
+          checkedValue == false
+              ? ExpansionTile(
+                  title: Text(''),
+                  initiallyExpanded: true,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                            child: FieldClass(
+                                controller: contactController, id: 'contact')),
+                        SizedBox(width: 5),
+                        Expanded(
+                          child: FieldClass(
+                            controller: zipCodeController,
+                            id: 'zipCode',
+                            onChangedVar: (String text) {
+                              cep = apiForm
+                                  .getCep(zipCodeController.text)
+                                  .then((map) {
+                                String? erro = map['erro'];
+
+                                print('ERRO RECEIVE $erro');
+                                if (erro != "true") {
+                                  print("ENTROU NA 1 $map");
+                                  cityController.text = map["localidade"];
+                                  stateController.text = map["uf"];
+                                  districtController.text = map['bairro'];
+                                  adressController.text = map['logradouro'];
+                                } else {
+                                  print("ENTRANDO AQUI: $map");
+                                  setState(() {
+                                    cityController.clear();
+                                    stateController.text = "";
+                                    districtController.text = "";
+                                    adressController.clear;
+                                  });
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    CityState(
+                        cityController: cityController,
+                        stateController: stateController),
+                    Row(
+                      children: [
+                        Expanded(
+                            flex: 4,
+                            child: FieldClass(
+                              id: 'basic',
+                              controller: districtController,
+                              hint: 'Bela Vista',
+                              label: 'Bairro',
+                            )),
+                        SizedBox(width: 5),
+                        Expanded(
+                          child: FieldClass(
+                            controller: numberController,
+                            id: 'number',
+                            label: 'Nº',
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: FieldClass(
+                            id: 'basic',
+                            controller: adressController,
+                            label: 'Logradouro',
+                            hint: 'R. Odomirio Ribeiro',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              : SizedBox(),
+          SizedBox(
+            height: 10,
+          ),
+        ],
       ),
     );
   }

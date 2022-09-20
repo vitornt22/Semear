@@ -1,18 +1,24 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, avoid_print
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_typeahead/flutter_typeahead.dart';
-
 import 'package:flutter/material.dart';
-import 'package:semear/models/city.dart';
-import 'package:semear/models/uf.dart';
+import 'package:semear/apis/api_form_validation.dart';
+import 'package:semear/models/church_model.dart';
 import 'package:semear/pages/login_page.dart';
+import 'package:semear/pages/register/formsFields/city_state_field.dart';
+import 'package:semear/pages/register/formsFields/fields_class.dart';
 import 'package:semear/pages/register/validations.dart';
 import 'package:semear/widgets/alert.dart';
-import 'package:semear/widgets/forms_field.dart';
+import 'package:semear/pages/register/formsFields/forms_field.dart';
+import 'package:semear/widgets/circular_progress.dart';
+import 'package:semear/widgets/erroScreen.dart';
+
+import '../../models/bank.dart';
 
 Validations validations = Validations();
+ApiForm apiForm = ApiForm();
 
 class ChurchRegister extends StatefulWidget {
   const ChurchRegister({super.key});
@@ -24,7 +30,8 @@ class ChurchRegister extends StatefulWidget {
 class _ChurchRegisterState extends State<ChurchRegister> {
   int _currentStep = 0;
   bool enableCity = false;
-  final AutovalidateMode _validate = AutovalidateMode.onUserInteraction;
+  Bank? selectedItem;
+  bool showProgress = false;
 
   TextEditingController denominationController = TextEditingController();
   TextEditingController ministeryController = TextEditingController();
@@ -43,52 +50,110 @@ class _ChurchRegisterState extends State<ChurchRegister> {
   TextEditingController districtController = TextEditingController();
   TextEditingController fundationController = TextEditingController();
   //PROVISORIO
-  TextEditingController controller = TextEditingController();
+  //bank
+  TextEditingController titularNamecontroller = TextEditingController();
+  TextEditingController agencyController = TextEditingController();
+  TextEditingController agencyDigitController = TextEditingController();
+  TextEditingController accountController = TextEditingController();
+  TextEditingController accountDigitController = TextEditingController();
+  TextEditingController bankController = TextEditingController();
+  TextEditingController codeController = TextEditingController();
 
-  bool valida = false;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  // PI
+  TextEditingController keyTypeController = TextEditingController();
+  TextEditingController keyValueController = TextEditingController();
+
+  bool valida = true;
+
+  final List<GlobalKey<FormState>> _formKey = [
+    GlobalKey<FormState>(),
+    GlobalKey<FormState>(),
+    GlobalKey<FormState>()
+  ];
+
   List<String> erros = [];
   String compare = "";
-  int? ufCode;
+  int ufCode = 0;
+  int stop = 1;
+  String siglaUF = "LL";
+  String? dropdownValue;
+  static List<String> keyTypes = <String>['CNPJ', 'EMAIL', 'CELULAR'];
 
-  static Future<List<UF>> getUfs(String? query) async {
-    http.Response response = await http.get(Uri.parse(
-        "https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome"));
+  late Future<Map<String, dynamic>> cep;
+  Future<Church?>? _futureChurch;
 
-    final List ufs = json.decode(response.body);
-    return ufs.map((json) => UF.fromJson(json)).where((user) {
-      final nameLower = user.nome!.toLowerCase();
+  Future<Church?>? submitData() async {
+    http.Response response = await http.post(
+      Uri.parse('https://backend-semear.herokuapp.com/church/api/'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "user": {
+          "username": usernameController.text,
+          "email": emailController.text,
+          "category": "church",
+          "can_post": true,
+          "password": passwordController.text
+        },
+        "adress": {
+          "zip_code": zipCodeController.text,
+          "adress": adressController.text,
+          "number": numberController.text,
+          "city": cityController.text,
+          "uf": stateController.text,
+          "district": districtController.text
+        },
+        "bankData": {
+          "holder": titularNamecontroller.text,
+          "cnpj": cnpjController.text,
+          "bank": codeController.text,
+          "agency": agencyController.text,
+          "digitAgency": agencyDigitController.text,
+          "account": accountController.text,
+          "digitAccount": accountDigitController.text
+        },
+        "pix": {
+          "typeKey": keyTypeController.text,
+          "valueKey": keyValueController.text
+        },
+        "cnpj": cnpjController.text,
+        "ministery": ministeryController.text,
+        "name": nameController.text
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return Church.fromJson(json.decode(response.body));
+    } else {
+      print("STATUS CODE ${response.statusCode}");
+      throw Exception('Falha ao registrar');
+    }
+  }
+
+  Future<List<Bank>> getBanks(String? query) async {
+    http.Response response =
+        await http.get(Uri.parse("https://brasilapi.com.br/api/banks/v1"));
+
+    final List banks = jsonDecode(response.body);
+    return banks.map((json) => Bank.fromJson(json)).where((user) {
+      final nameLower = user.name!.toLowerCase();
       final queryLower = query!.toLowerCase();
-
       return nameLower.contains(queryLower);
     }).toList();
   }
 
-  Future<List<City>> getCities(String? query) async {
-    http.Response response = await http.get(Uri.parse(
-        "https://servicodados.ibge.gov.br/api/v1/localidades/estados/$ufCode/municipios"));
-    final List cities = json.decode(response.body);
-    return cities.map((json) => City.fromJson(json)).where((user) {
-      final nameLower = user.nome!.toLowerCase();
-      final queryLower = query!.toLowerCase();
+  getCep() async {
+    String cep = zipCodeController.text.replaceAll(RegExp(r'[^\w\s]+'), '');
+    http.Response response =
+        await http.get(Uri.parse("https://viacep.com.br/ws/$cep/json"));
 
-      return nameLower.contains(queryLower);
-    }).toList();
+    return json.decode(response.body);
   }
 
   @override
   void initState() {
     super.initState();
-    getCities(cityController.text).then((map) => print(map));
-  }
-
-  Future<Map> verifyCnpj() async {
-    print('CNPJ ${cnpjController.text}');
-    http.Response response = await http
-        .get(Uri.parse("https://publica.cnpj.ws/cnpj/${cnpjController.text}"));
-
-    print(response.body);
-    return json.decode(response.body);
+    apiForm.getCities(cityController.text, siglaUF).then((map) => print(map));
+    getCep().then((map) => print(map));
   }
 
   @override
@@ -124,127 +189,127 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                         .colorScheme
                         .copyWith(primary: Colors.green),
                   ),
-                  child: Form(
-                    autovalidateMode: _validate,
-                    key: _formKey,
-                    child: Stepper(
-                        type: StepperType.horizontal,
-                        currentStep: _currentStep,
-                        physics: ScrollPhysics(),
-                        onStepCancel: () {
-                          if (_currentStep > 0) {
-                            setState(() {
-                              _currentStep--;
-                            });
-                          } else {
-                            Navigator.pop(context);
-                          }
-                        },
-                        onStepContinue: () async {
-                          print(cnpjController.text);
-                          String id = "", activity = "", statusRegister = "";
-                          int statusCode = 0;
-
-                          if (_currentStep < 1) {
-                            if (cnpjController.text.length == 14) {
-                              valida =
-                                  compare == cnpjController.text ? true : false;
-                              //Aguardando validação de cnpj
-                              if (valida == false) {
-                                Map verify = await verifyCnpj();
-                                try {
-                                  id = verify["natureza_juridica"]["id"];
-                                  statusRegister = verify["estabelecimento"]
-                                      ["situacao_cadastral"];
-                                  activity = verify["estabelecimento"]
-                                      ["atividade_principal"]["id"];
-                                } catch (e) {
-                                  statusCode = verify["status"];
-                                }
-
-                                if (statusCode == 429) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertBox(
-                                          title:
-                                              "Aguarde um pouco até a próxima requisição",
-                                          text:
-                                              "Possuimos um limite para requisição de validação, aguarde um pouco até conseguir novamente",
-                                          sizeBox: 40);
-                                    },
-                                  );
-                                } else if ((id == "3220" || id == "3999") &&
-                                    activity == "9491000" &&
-                                    statusRegister == "Ativa") {
-                                  compare = cnpjController.text;
-                                  setState(() {
-                                    valida = true;
-                                    _currentStep++;
-                                  });
-                                } else {
-                                  valida = false;
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertBox(
-                                          title: "CNPJ INVÁLIDO",
-                                          text:
-                                              "Para que possamos comprovar que é uma igreja, o CNPJ deve estar ativo, e ser cadastrado como atividade de organizações religiosas. ",
-                                          sizeBox: 80);
-                                    },
-                                  );
-                                }
-                              } else {
-                                setState(() {
-                                  _currentStep++;
-                                });
-                              }
-                            } else {
+                  child: Stepper(
+                      type: StepperType.horizontal,
+                      currentStep: _currentStep,
+                      physics: ScrollPhysics(),
+                      onStepCancel: () {
+                        if (_currentStep > 0) {
+                          setState(() {
+                            _currentStep--;
+                          });
+                        } else {
+                          Navigator.pop(context);
+                        }
+                      },
+                      onStepContinue: () async {
+                        if (_formKey[_currentStep].currentState!.validate()) {
+                          switch (_currentStep) {
+                            case 0:
+                              //Define vars to validate cnpj
                               setState(() {
-                                valida = false;
+                                showProgress = true;
                               });
-                            }
-                          }
+                              verifica();
+                              break;
+                            case 1:
+                              int cont = 0;
+                              setState(() {
+                                showProgress = true;
+                              });
 
-                          if (_currentStep < 2 &&
-                              _formKey.currentState!.validate() &&
-                              valida == true) {
-                            setState(() {
-                              _currentStep++;
-                            });
-                          } else if (_currentStep > 2) {
-                            // ignore: use_build_context_synchronously
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return LoginPage(
-                                    category: 'church',
-                                    redirect: 'initial',
-                                  );
-                                },
-                              ),
-                            );
+                              apiForm
+                                  .checkEmail(emailController.text)
+                                  .then((value) async {
+                                if (value == true) {
+                                  emailController.text = 'email existente';
+                                } else {
+                                  setState(() {
+                                    cont++;
+                                  });
+                                }
+
+                                apiForm
+                                    .checkUsername(usernameController.text)
+                                    .then((value) {
+                                  if (value == true) {
+                                    usernameController.text =
+                                        'Nome de usuário já existe';
+                                  } else {
+                                    setState(() {
+                                      cont++;
+                                    });
+                                  }
+
+                                  if (cont == 2) {
+                                    setState(() {
+                                      _currentStep++;
+                                    });
+                                  }
+                                  setState(() {
+                                    showProgress = false;
+                                  });
+                                });
+                              });
+
+                              break;
+                            case 2:
+                              _futureChurch = submitData();
+
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return FutureBuilder<Church?>(
+                                  future: _futureChurch,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return LoginPage(
+                                        category: "church",
+                                        is_register: true,
+                                      );
+                                    } else if (snapshot.hasError) {
+                                      return ErrorScreen(
+                                        text: '${snapshot.error}',
+                                      );
+                                    }
+
+                                    return LoadingScreen();
+                                  },
+                                );
+                              }));
+                              break;
                           }
-                        },
-                        steps: [
-                          Step(
-                              isActive: _currentStep >= 0,
-                              title: Text("Validação"),
-                              content: validationChurchForm()),
-                          Step(
-                            isActive: _currentStep >= 1,
-                            title: Text("Informações"),
-                            content: infoChurchForms(),
+                        }
+                      },
+                      steps: [
+                        Step(
+                          isActive: _currentStep >= 0,
+                          title: Text("Validação"),
+                          content: Form(
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            key: _formKey[0],
+                            child: validationChurchForm(),
                           ),
-                          Step(
-                            isActive: _currentStep >= 2,
-                            title: Text("Dados"),
-                            content: dataChurchForms(),
+                        ),
+                        Step(
+                          isActive: _currentStep >= 1,
+                          title: Text("Informações"),
+                          content: Form(
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            key: _formKey[1],
+                            child: infoChurchForms(),
                           ),
-                        ]),
-                  ),
+                        ),
+                        Step(
+                          isActive: _currentStep >= 2,
+                          title: Text("Dados"),
+                          content: Form(
+                            key: _formKey[2],
+                            child: dataChurchForms(),
+                          ),
+                        ),
+                      ]),
                 ),
               ),
             ),
@@ -256,33 +321,33 @@ class _ChurchRegisterState extends State<ChurchRegister> {
 
   Widget validationChurchForm() {
     return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
         children: [
-          SizedBox(height: 55),
-          FormsField(
-            keyboard: TextInputType.number,
-            cnpjController: cnpjController,
-            formkey: _formKey,
-            mask: '##############',
-            controller: cnpjController,
-            validator: validations.checkCnpjValidation,
-            label: 'CNPJ',
-            hintText: 'ex: 11.111.111/0001-11',
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 55),
+              FieldClass(controller: cnpjController, id: 'cnpj'),
+              FieldClass(
+                controller: denominationController,
+                id: 'basic',
+                label: 'Denominação',
+                hint: 'Ex: Assembleia de Deus',
+              ),
+              FormsField(
+                keyboard: TextInputType.text,
+                controller: ministeryController,
+                label: 'Ministério',
+                hintText: 'ex: Missão',
+              )
+            ],
           ),
-          FormsField(
-            keyboard: TextInputType.text,
-            validator: validations.checkEmpty,
-            controller: denominationController,
-            label: 'Denominação',
-            hintText: 'ex: Assembleia de Deus',
-          ),
-          FormsField(
-            keyboard: TextInputType.text,
-            controller: ministeryController,
-            label: 'Ministério',
-            hintText: 'ex: Missão',
-          )
+          Center(
+              heightFactor: 15,
+              child: Visibility(
+                visible: showProgress,
+                child: CircularProgressIndicator(),
+              )),
         ],
       ),
     );
@@ -290,240 +355,127 @@ class _ChurchRegisterState extends State<ChurchRegister> {
 
   Widget infoChurchForms() {
     return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
         children: [
-          FormsField(
-            autofill: const [AutofillHints.email],
-            keyboard: TextInputType.emailAddress,
-            controller: emailController,
-            label: 'Email',
-            validator: validations.checkEmail,
-            hintText: 'ex: semear@gmail.com',
-            sizeBoxHeigth: 10,
-          ),
-          FormsField(
-            keyboard: TextInputType.text,
-            controller: nameController,
-            label: 'Nome de Usuário',
-            validator: validations.checkEmpty,
-            hintText: 'ex: semear123',
-            sizeBoxHeigth: 10,
-          ),
-          Row(
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: FormsField(
-                  keyboard: TextInputType.text,
-                  controller: passwordController,
-                  label: 'Senha',
-                  hintText: '',
-                  sizeBoxHeigth: 10,
-                ),
+              FieldClass(controller: emailController, id: 'email'),
+              //MODIFICAR PARA CHECAR SE EXISTE
+              FieldClass(
+                controller: usernameController,
+                id: 'basic',
+                label: 'Nome de Usuário',
+                hint: 'ex:semear123',
               ),
-              SizedBox(width: 5),
-              Expanded(
-                child: FormsField(
-                  keyboard: TextInputType.text,
-                  controller: confirmPasswordController,
-                  label: 'Confirmar Senha',
-                  hintText: '',
-                  sizeBoxHeigth: 10,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: FormsField(
-                  mask: '(##)#####-####',
-                  keyboard: TextInputType.number,
-                  controller: contactController,
-                  label: 'Contato',
-                  hintText: 'ex: (89)99929-2922',
-                  sizeBoxHeigth: 10,
-                ),
-              ),
-              SizedBox(width: 5),
-              Expanded(
-                child: FormsField(
-                  keyboard: TextInputType.text,
-                  controller: zipCodeController,
-                  mask: "#####-###",
-                  label: 'CEP',
-                  hintText: 'ex: 64690-000',
-                  sizeBoxHeigth: 10,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                flex: 4,
-                child: FormsField(
-                  keyboard: TextInputType.text,
-                  controller: adressController,
-                  label: 'Endereço',
-                  hintText: 'ex: Rua.Odomirio Ribeiro',
-                  sizeBoxHeigth: 10,
-                ),
-              ),
-              SizedBox(width: 5),
-              Expanded(
-                child: FormsField(
-                  keyboard: TextInputType.text,
-                  controller: numberController,
-                  label: 'Nº',
-                  hintText: 'ex: 217',
-                  sizeBoxHeigth: 10,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: SizedBox(
-                  height: 50,
-                  child: TypeAheadFormField(
-                    hideOnEmpty: true,
-                    enabled: stateController.text.isEmpty ? false : true,
-                    hideSuggestionsOnKeyboardHide: true,
-                    hideKeyboard: stateController.text.isEmpty ? true : false,
-                    getImmediateSuggestions: false,
-                    suggestionsCallback: (pattern) =>
-                        getCities(cityController.text),
-                    itemBuilder: (context, City item) => ListTile(
-                      title: Text("${item.nome}"),
+              Row(
+                children: [
+                  Expanded(
+                    child: FieldClass(
+                      controller: passwordController,
+                      id: 'password',
                     ),
-                    textFieldConfiguration: TextFieldConfiguration(
-                      onChanged: (context) {
-                        if (stateController.text.isEmpty) {
-                          cityController.text = "";
+                  ),
+                  SizedBox(width: 5),
+                  Expanded(
+                    child: FieldClass(
+                      controller: confirmPasswordController,
+                      id: 'password',
+                      validator: (text) {
+                        text = confirmPasswordController.text;
+                        String text2 = passwordController.text;
+                        if (text.length != text2.length || text != text2) {
+                          return "Senhas não coincidem";
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: FieldClass(
+                        controller: contactController, id: 'contact'),
+                  ),
+                  SizedBox(width: 5),
+                  Expanded(
+                      child: FieldClass(
+                    controller: zipCodeController,
+                    id: 'zipCode',
+                    onChangedVar: (String text) {
+                      cep = getCep().then((map) {
+                        String? erro = map['erro'];
 
+                        print('ERRO RECEIVE $erro');
+                        if (erro != "true") {
+                          print("ENTROU NA 1 $map");
+                          cityController.text = map["localidade"];
+                          stateController.text = map["uf"];
+                          districtController.text = map['bairro'];
+                          adressController.text = map['logradouro'];
+                        } else {
+                          print("ENTRANDO AQUI: $map");
                           setState(() {
-                            ufCode = null;
+                            cityController.clear();
+                            stateController.text = "";
+                            districtController.text = "";
+                            adressController.clear;
                           });
                         }
-                      },
-                      controller: cityController,
-                      decoration: InputDecoration(
-                        contentPadding:
-                            EdgeInsets.symmetric(vertical: 15, horizontal: 8),
-                        errorBorder: OutlineInputBorder(
-                            borderSide: BorderSide(style: BorderStyle.solid)),
-                        suffixIcon: IconButton(
-                            onPressed: () {
-                              cityController.text = "";
-                            },
-                            icon: Icon(
-                              Icons.cancel,
-                              size: 15,
-                            )),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xffa23673A)),
-                        ),
-                        floatingLabelStyle: TextStyle(color: Colors.green),
-                        filled: false,
-                        hintText: "Cidade",
-                        focusedBorder: OutlineInputBorder(
-                          gapPadding: 5,
-                          borderSide: BorderSide(color: Colors.black),
-                        ),
-                      ),
-                    ),
-                    onSuggestionSelected: (City val) {
-                      if (stateController.text.isNotEmpty) {
-                        cityController.text = val.nome!;
-                      }
-                    },
-                  ),
-                ),
-              ),
-              SizedBox(width: 5),
-              Expanded(
-                child: SizedBox(
-                  height: 50,
-                  child: TypeAheadFormField(
-                    hideOnEmpty: true,
-                    suggestionsCallback: (pattern) =>
-                        getUfs(stateController.text),
-                    itemBuilder: (context, UF item) => ListTile(
-                      title: Text("${item.nome}"),
-                    ),
-                    textFieldConfiguration: TextFieldConfiguration(
-                        controller: stateController,
-                        decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.symmetric(vertical: 15, horizontal: 8),
-                          errorBorder: OutlineInputBorder(
-                              borderSide: BorderSide(style: BorderStyle.solid)),
-                          suffixIcon: IconButton(
-                              onPressed: () {
-                                stateController.text = "";
-                                setState(() {
-                                  ufCode = null;
-                                });
-                              },
-                              icon: Icon(
-                                Icons.cancel,
-                                size: 15,
-                              )),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xffa23673A)),
-                          ),
-                          floatingLabelStyle: TextStyle(color: Colors.green),
-                          filled: false,
-                          hintText: "UF",
-                          focusedBorder: OutlineInputBorder(
-                            gapPadding: 5,
-                            borderSide: BorderSide(color: Colors.black),
-                          ),
-                        ),
-                        onChanged: (context) {
-                          if (stateController.text.isEmpty) {
-                            setState(() {
-                              enableCity = false;
-                              ufCode = null;
-                            });
-                          }
-                        }),
-                    onSuggestionSelected: (UF val) {
-                      stateController.text = val.nome!;
-                      setState(() {
-                        ufCode = val.id;
                       });
                     },
+                  )),
+                ],
+              ),
+              CityState(
+                  cityController: cityController,
+                  stateController: stateController),
+              Row(
+                children: [
+                  Expanded(
+                      flex: 4,
+                      child: FieldClass(
+                        id: 'basic',
+                        controller: districtController,
+                        hint: 'Bela Vista',
+                        label: 'Bairro',
+                      )),
+                  SizedBox(width: 5),
+                  Expanded(
+                    child: FieldClass(
+                      controller: numberController,
+                      id: 'number',
+                      label: 'Nº',
+                    ),
                   ),
-                ),
+                ],
               ),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: FieldClass(
+                      id: 'basic',
+                      controller: adressController,
+                      label: 'Logradouro',
+                      hint: 'R. Odomirio Ribeiro',
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 10,
+              )
             ],
           ),
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: FormsField(
-                  keyboard: TextInputType.text,
-                  controller: districtController,
-                  validator: validations.checkEmpty,
-                  label: 'Bairro',
-                  hintText: 'ex: Bela Vista',
-                ),
-              ),
-              SizedBox(width: 5),
-              Expanded(
-                child: FormsField(
-                  keyboard: TextInputType.datetime,
-                  controller: fundationController,
-                  label: 'Fundação',
-                ),
-              ),
-            ],
-          ),
+          Visibility(
+              visible: showProgress,
+              child: Center(
+                heightFactor: 20,
+                child: CircularProgressIndicator(),
+              ))
         ],
       ),
     );
@@ -559,45 +511,31 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                         thickness: 1,
                         color: Colors.green,
                       ),
-                      FormsField(
-                        keyboard: TextInputType.text,
-                        controller: controller,
+                      FieldClass(
+                        controller: titularNamecontroller,
+                        id: 'basic',
                         label: 'Nome do Titular',
-                        hintText: 'Ex: Joao Gomes da Silva',
-                        sizeBoxHeigth: 10,
                       ),
-                      FormsField(
-                        keyboard: TextInputType.text,
-                        controller: controller,
-                        label: 'CPF/CNPJ',
-                        hintText: 'Digite o CPF OU CNPJ',
-                        sizeBoxHeigth: 10,
-                      ),
-                      FormsField(
-                        keyboard: TextInputType.text,
-                        controller: controller,
-                        label: 'Banco',
-                        hintText: 'Digite o CPF OU CNPJ',
-                        sizeBoxHeigth: 10,
+                      FieldClass(controller: cnpjController, id: 'cnpj'),
+                      FieldClass(
+                        controller: bankController,
+                        id: 'bank',
+                        codeBankController: codeController,
                       ),
                       Row(
                         children: [
                           Expanded(
-                            flex: 4,
-                            child: FormsField(
-                              keyboard: TextInputType.text,
-                              controller: controller,
-                              label: 'Agência',
-                              sizeBoxHeigth: 10,
-                            ),
-                          ),
+                              flex: 3,
+                              child: FieldClass(
+                                id: 'agency',
+                                controller: agencyController,
+                              )),
                           SizedBox(width: 5),
                           Expanded(
-                            child: FormsField(
-                              keyboard: TextInputType.text,
-                              controller: controller,
+                            child: FieldClass(
+                              id: 'digit',
+                              controller: agencyDigitController,
                               label: 'Digito',
-                              sizeBoxHeigth: 10,
                             ),
                           ),
                         ],
@@ -608,7 +546,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                             flex: 4,
                             child: FormsField(
                               keyboard: TextInputType.text,
-                              controller: controller,
+                              controller: accountController,
                               label: 'Conta',
                             ),
                           ),
@@ -616,7 +554,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                           Expanded(
                             child: FormsField(
                               keyboard: TextInputType.text,
-                              controller: controller,
+                              controller: accountDigitController,
                               label: 'Digito',
                             ),
                           ),
@@ -655,15 +593,33 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                       thickness: 1,
                       color: Colors.green,
                     ),
-                    FormsField(
-                      keyboard: TextInputType.text,
-                      controller: controller,
-                      label: 'Tipo de Chave ',
-                      sizeBoxHeigth: 10,
+                    InputDecorator(
+                      decoration: InputDecoration(border: OutlineInputBorder()),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButtonFormField(
+                            validator: validations.checkEmpty,
+                            isExpanded: true,
+                            hint: Text('Tipo de chave'),
+                            value: dropdownValue,
+                            alignment: Alignment.center,
+                            onChanged: (String? selectedValue) {
+                              setState(() {
+                                dropdownValue = selectedValue;
+                                keyTypeController.text = selectedValue!;
+                              });
+                            },
+                            items: keyTypes
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList()),
+                      ),
                     ),
                     FormsField(
                       keyboard: TextInputType.text,
-                      controller: controller,
+                      controller: keyValueController,
                       label: 'Valor da Chave',
                       sizeBoxHeigth: 10,
                     ),
@@ -675,5 +631,77 @@ class _ChurchRegisterState extends State<ChurchRegister> {
         ),
       ],
     );
+  }
+
+  void verifica() {
+    String cnpjCheck = cnpjController.text,
+        id = "",
+        activity = "",
+        statusRegister = "";
+    int statusCode = 0;
+
+    apiForm.checkCnpj(cnpjController.text).then((value) async {
+      if (value == true) {
+        cnpjController.text = '                 ';
+      } else {
+        valida = compare == cnpjCheck ? true : false;
+        if (valida == false && compare != cnpjCheck) {
+          Map verify = await apiForm.verifyCnpj(cnpjController.text);
+
+          try {
+            id = verify["natureza_juridica"]["id"];
+            statusRegister = verify["estabelecimento"]["situacao_cadastral"];
+            activity = verify["estabelecimento"]["atividade_principal"]["id"];
+          } catch (e) {
+            statusCode = verify["status"];
+          }
+
+          if (statusCode == 429) {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertBox(
+                    title: "Aguarde um pouco até a próxima requisição",
+                    text:
+                        "Possuimos um limite para requisição de validação, aguarde um pouco até conseguir novamente",
+                    sizeBox: 40);
+              },
+            );
+          } else if ((id == "3220" || id == "3999") &&
+              activity == "9491000" &&
+              statusRegister == "Ativa") {
+            print(verify);
+
+            setState(() {
+              compare = cnpjController.text;
+              valida = true;
+              _currentStep++;
+            });
+          } else if (cnpjController.text != 'CNPJ já existe') {
+            setState(() {
+              valida = false;
+              compare = "";
+            });
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertBox(
+                    title: "CNPJ INVÁLIDO OU JÁ EXISTENTE",
+                    text:
+                        "Para que possamos comprovar que é uma igreja, o CNPJ deve estar ativo, e ser cadastrado como atividade de organizações religiosas. ",
+                    sizeBox: 80);
+              },
+            );
+          }
+        } else {
+          setState(() {
+            _currentStep++;
+          });
+        }
+      }
+      setState(() {
+        showProgress = false;
+      });
+    });
   }
 }

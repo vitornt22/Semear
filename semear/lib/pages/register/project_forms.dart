@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors
 
 import 'package:flutter/material.dart';
-import 'package:semear/widgets/forms_field.dart';
+import 'package:semear/pages/register/formsFields/forms_field.dart';
 
 class ValidationProjectForm extends StatefulWidget {
   const ValidationProjectForm({super.key});

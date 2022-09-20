@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors, prefer_typing_uninitialized_variables, avoid_print
+// ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors, prefer_typing_uninitialized_variables, avoid_print, must_be_immutable
 
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -8,16 +8,20 @@ class FormsField extends StatefulWidget {
       {super.key,
       this.autofill,
       this.cnpjController,
+      this.onChangedVar,
       required this.keyboard,
       this.formkey,
       this.mask,
       this.validator,
       required this.controller,
       this.height,
+      this.obscureText,
       this.label,
       this.hintText,
       this.sizeBoxHeigth});
 
+  bool? obscureText = false;
+  var onChangedVar;
   List<String>? autofill;
   GlobalKey<FormState>? formkey;
   TextInputType keyboard;
@@ -94,7 +98,8 @@ class _FormsFieldState extends State<FormsField> {
             : SizedBox(),
         SizedBox(height: 10),
         TextFormField(
-          onChanged: onChanged,
+          obscureText: widget.obscureText ?? false,
+          onChanged: widget.onChangedVar ?? onChanged,
           validator: widget.validator ??
               (value) {
                 return null;

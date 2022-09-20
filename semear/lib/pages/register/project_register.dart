@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors
 
 import 'package:semear/pages/login_page.dart';
+import 'package:semear/pages/register/formsFields/fields_class.dart';
+import 'package:semear/pages/register/formsFields/forms_field.dart';
 import 'package:semear/pages/register/project_forms.dart';
 
 class ProjectRegister extends StatefulWidget {
@@ -14,6 +16,11 @@ class ProjectRegister extends StatefulWidget {
 
 class _ProjectRegisterState extends State<ProjectRegister> {
   int _currentStep = 0;
+  bool showProgress = false;
+
+  TextEditingController cnpjController = TextEditingController();
+  TextEditingController denominationController = TextEditingController();
+  TextEditingController ministeryController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +80,6 @@ class _ProjectRegisterState extends State<ProjectRegister> {
                             builder: (context) {
                               return LoginPage(
                                 category: 'project',
-                                redirect: 'initial',
                               );
                             },
                           ),
@@ -84,7 +90,7 @@ class _ProjectRegisterState extends State<ProjectRegister> {
                       Step(
                         isActive: _currentStep >= 0,
                         title: Text("Validação"),
-                        content: ValidationProjectForm(),
+                        content: validationProjectForm(),
                       ),
                       Step(
                         isActive: _currentStep >= 1,
@@ -103,6 +109,40 @@ class _ProjectRegisterState extends State<ProjectRegister> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget validationProjectForm() {
+    return SingleChildScrollView(
+      child: Stack(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 55),
+              FieldClass(controller: cnpjController, id: 'cnpj'),
+              FieldClass(
+                controller: denominationController,
+                id: 'basic',
+                label: 'Denominação',
+                hint: 'Ex: Assembleia de Deus',
+              ),
+              FormsField(
+                keyboard: TextInputType.text,
+                controller: ministeryController,
+                label: 'Ministério',
+                hintText: 'ex: Missão',
+              )
+            ],
+          ),
+          Center(
+              heightFactor: 15,
+              child: Visibility(
+                visible: showProgress,
+                child: CircularProgressIndicator(),
+              )),
+        ],
       ),
     );
   }

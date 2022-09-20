@@ -1,11 +1,13 @@
 class City {
-  int? id;
-  String? nome;
+  String? name;
+  String? codigoIbge;
 
-  City({this.id, this.nome});
+  City({this.name, this.codigoIbge});
 
-  City.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    nome = json['nome'];
+  factory City.fromJson(Map<String, dynamic> json) {
+    return City(
+      name: json['nome'],
+      codigoIbge: json['codigo_ibge'],
+    );
   }
 }

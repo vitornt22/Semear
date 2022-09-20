@@ -3,14 +3,29 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:semear/pages/home_screen.dart';
 import 'package:semear/pages/initial_page.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key, this.redirect, required this.category});
-  String? redirect;
+class LoginPage extends StatefulWidget {
+  LoginPage({
+    super.key,
+    required this.category,
+    this.is_register,
+  });
+
   String category;
+  bool? is_register;
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,23 +37,14 @@ class LoginPage extends StatelessWidget {
               backgroundColor: Colors.transparent,
               leading: IconButton(
                   onPressed: () {
-                    if (redirect == 'initial') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return InitialPage();
-                          },
-                        ),
-                      );
-                    } else {
-                      if (FocusScope.of(context).isFirstFocus) {
-                        FocusScope.of(context).unfocus();
-                      }
-                      Timer(Duration(milliseconds: 200), () {
-                        Navigator.pop(context);
-                      });
-                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return InitialPage();
+                        },
+                      ),
+                    );
                   },
                   icon: Icon(Icons.arrow_back, color: Color(0xffa23673A)))),
           body: SingleChildScrollView(
@@ -109,13 +115,14 @@ class LoginPage extends StatelessWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         shape: StadiumBorder(),
+                        backgroundColor: Color(0xffa23673A),
                       ),
                       onPressed: () {
                         Navigator.pushAndRemoveUntil<dynamic>(
                           context,
                           MaterialPageRoute<dynamic>(
-                            builder: (BuildContext context) =>
-                                HomeScreen(category: category, user: 'ola'),
+                            builder: (BuildContext context) => HomeScreen(
+                                category: widget.category, user: 'ola'),
                           ),
                           (route) =>
                               false, //if you want to disable back feature set to false
@@ -137,7 +144,7 @@ class LoginPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        ' Ou conecte-se com ',
+                        ' Ou Registre-se ',
                         style: TextStyle(color: Colors.grey),
                       ),
                       Expanded(
@@ -147,26 +154,18 @@ class LoginPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 20),
                   Row(
                     children: [
-                      SizedBox(
-                        width: 150,
-                        child: SignInButton(
-                          Buttons.Google,
-                          text: 'Google',
-                          onPressed: () {},
-                        ),
-                      ),
-                      SizedBox(width: 30),
-                      SizedBox(
-                        width: 150,
-                        child: SignInButton(
-                          Buttons.Facebook,
-                          text: 'Facebook',
-                          onPressed: () {},
-                        ),
-                      ),
+                      Expanded(
+                          child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.all(20),
+                            backgroundColor: Colors.white),
+                        onPressed: () {},
+                        child: Text('Registre-se',
+                            style: TextStyle(color: Colors.green)),
+                      )),
                     ],
                   )
                 ],

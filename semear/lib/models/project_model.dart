@@ -2,32 +2,32 @@ import 'package:semear/models/church_model.dart';
 import 'package:semear/models/informations_model.dart';
 import 'package:semear/models/user_model.dart';
 
-class Missionary {
+class Project {
   int? id;
   User? user;
   Adress? adress;
   Church? church;
   int? idChurch;
   int? idAdress;
-  String? fullName;
+  String? name;
 
-  Missionary(
+  Project(
       {this.id,
       this.user,
       this.adress,
       this.church,
       this.idChurch,
       this.idAdress,
-      this.fullName});
+      this.name});
 
-  Missionary.fromJson(Map<String, dynamic> json) {
+  Project.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     user = json['user'] != null ? User.fromJson(json['user']) : null;
     adress = json['adress'] != null ? Adress.fromJson(json['adress']) : null;
     church = json['church'] != null ? Church.fromJson(json['church']) : null;
     idChurch = json['id_church'];
     idAdress = json['id_adress'];
-    fullName = json['fullName'];
+    name = json['name'];
   }
 
   Map<String, dynamic> toJson() {
@@ -44,7 +44,7 @@ class Missionary {
     }
     data['id_church'] = idChurch;
     data['id_adress'] = idAdress;
-    data['fullName'] = fullName;
+    data['name'] = name;
     return data;
   }
 }

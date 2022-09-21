@@ -55,10 +55,9 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
   Future<Missionary?>? _futureMissionary;
 
   bool showProgress = false;
-  String? dropdownValue;
   Map? adressMap;
   int idAdress = 0;
-  late int idChurch;
+  int idChurch = 0;
 
   bool checkedValue = true;
 
@@ -69,7 +68,26 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
     http.Response response = await http.post(
       Uri.parse('https://backend-semear.herokuapp.com/missionary/api/'),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
+      body: jsonEncode(
+        {
+          "user": {
+            "username": usernameController.text,
+            "email": emailController.text,
+            "category": "missionary",
+            "can_post": true,
+            "password": passwordController.text
+          },
+          "id_church": idChurch,
+          "id_adress": idAdress,
+          "fullName": fullNameController.text,
+          "church": null,
+          "adress": adressMap
+        },
+      ),
+    );
+
+    print(
+      jsonEncode({
         "user": {
           "username": usernameController.text,
           "email": emailController.text,
@@ -77,19 +95,21 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
           "can_post": true,
           "password": passwordController.text
         },
-        "churchAdress": checkedValue,
-        "fullName": fullNameController.text,
+        "id_church": idChurch,
         "id_adress": idAdress,
+        "fullName": fullNameController.text,
         "church": idChurch,
         "adress": adressMap
       }),
     );
+
     if (response.statusCode == 201 || response.statusCode == 200) {
       return Missionary.fromJson(json.decode(response.body));
     } else {
       print("STATUS CODE ${response.statusCode}");
       throw Exception('Falha ao registrar');
     }
+    return null;
   }
 
   final List<GlobalKey<FormState>> _formKey = [
@@ -214,55 +234,32 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
                                     .getChurch(churchController.text)
                                     .then((value) {
                                   setState(() {
-                                    print(value);
+                                    print(value['id']);
                                     idAdress = value['adress']['id'];
+                                    print('ADRESSS: $idAdress');
                                     idChurch = value['id'];
                                   });
+                                  submiDataFunction();
                                 });
                               } else {
-                                setState(() {
-                                  adressMap = {
-                                    "adress": {
+                                apiForm
+                                    .getChurch(churchController.text)
+                                    .then((value) {
+                                  setState(() {
+                                    idAdress = 0;
+                                    adressMap = {
                                       "zip_code": zipCodeController.text,
                                       "adress": adressController.text,
                                       "number": numberController.text,
                                       "city": cityController.text,
                                       "uf": stateController.text,
                                       "district": districtController.text
-                                    }
-                                  };
+                                    };
+                                  });
+                                  submiDataFunction();
                                 });
                               }
 
-                              _futureMissionary = submitData();
-                              setState(() {
-                                showProgress = false;
-                              });
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return FutureBuilder<Missionary?>(
-                                      future: _futureMissionary,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.hasData) {
-                                          return LoginPage(
-                                            category: "missionary",
-                                            is_register: true,
-                                          );
-                                        } else if (snapshot.hasError) {
-                                          return ErrorScreen(
-                                            text: '${snapshot.error}',
-                                          );
-                                        }
-
-                                        return LoadingScreen();
-                                      },
-                                    );
-                                  },
-                                ),
-                              );
                               break;
                           }
                         }
@@ -296,6 +293,38 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
     );
   }
 
+  void submiDataFunction() {
+    _futureMissionary = submitData();
+    setState(() {
+      showProgress = false;
+    });
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return FutureBuilder<Missionary?>(
+            future: _futureMissionary,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return LoginPage(
+                  category: "missionary",
+                  is_register: true,
+                );
+              } else if (snapshot.hasError) {
+                return ErrorScreen(
+                  text: '${snapshot.error}',
+                );
+              }
+
+              return LoadingScreen();
+            },
+          );
+        },
+      ),
+    );
+  }
+
   Widget infoMissionaryForm() {
     return SingleChildScrollView(
       child: Stack(
@@ -313,9 +342,7 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
               //MODIFICAR PARA CHECAR SE EXISTE
               FieldClass(
                 controller: usernameController,
-                id: 'basic',
-                label: 'Nome de Usuário',
-                hint: 'ex:semear123',
+                id: 'username',
               ),
               FieldClass(
                 controller: churchController,
@@ -341,11 +368,12 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
             ],
           ),
           Visibility(
-              visible: showProgress,
-              child: Center(
-                heightFactor: 15,
-                child: CircularProgressIndicator(),
-              ))
+            visible: showProgress,
+            child: Center(
+              heightFactor: 15,
+              child: CircularProgressIndicator(),
+            ),
+          )
         ],
       ),
     );
@@ -418,13 +446,14 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
                     Row(
                       children: [
                         Expanded(
-                            flex: 4,
-                            child: FieldClass(
-                              id: 'basic',
-                              controller: districtController,
-                              hint: 'Bela Vista',
-                              label: 'Bairro',
-                            )),
+                          flex: 4,
+                          child: FieldClass(
+                            id: 'basic',
+                            controller: districtController,
+                            hint: 'Bela Vista',
+                            label: 'Bairro',
+                          ),
+                        ),
                         SizedBox(width: 5),
                         Expanded(
                           child: FieldClass(

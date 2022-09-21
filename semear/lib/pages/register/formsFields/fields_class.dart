@@ -56,6 +56,7 @@ class _FieldClassState extends State<FieldClass> {
       'agency': agency(),
       'digit': digit(),
       'church': church(),
+      'username': username(),
     };
 
     return map[widget.id];
@@ -122,6 +123,17 @@ class _FieldClassState extends State<FieldClass> {
       label: widget.label,
       validator: validations.checkEmpty,
       hintText: widget.hint,
+      sizeBoxHeigth: 10,
+    );
+  }
+
+  Widget username() {
+    return FormsField(
+      keyboard: TextInputType.text,
+      controller: widget.controller,
+      label: "Username",
+      validator: validations.checkUsernameValidation,
+      hintText: 'Ex: semear_',
       sizeBoxHeigth: 10,
     );
   }

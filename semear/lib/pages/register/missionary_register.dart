@@ -30,6 +30,7 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
   TextEditingController fullNameController = TextEditingController();
   TextEditingController churchController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  TextEditingController emailControlllerCompare = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
@@ -183,7 +184,8 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
                                   .checkEmail(emailController.text)
                                   .then((value) async {
                                 if (value == true) {
-                                  emailController.text = 'email existente';
+                                  emailControlllerCompare.text =
+                                      'email existente';
                                 } else {
                                   setState(() {
                                     cont++;

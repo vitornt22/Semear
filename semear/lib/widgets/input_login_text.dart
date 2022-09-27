@@ -3,9 +3,10 @@
 import 'package:flutter/material.dart';
 
 class InputLoginField extends StatelessWidget {
-  const InputLoginField(
+  InputLoginField(
       {super.key,
       this.suffixIcon,
+      this.validator,
       this.obscure,
       this.maxLines,
       required this.text,
@@ -17,6 +18,7 @@ class InputLoginField extends StatelessWidget {
   final TextEditingController? controller;
   final String text;
   final int? maxLines;
+  String? Function(String?)? validator;
   final String? hint;
   final Stream<String> stream;
   final Function(String)? onChanged;
@@ -40,12 +42,13 @@ class InputLoginField extends StatelessWidget {
           builder: (contex, snapshot) => TextFormField(
             onChanged: onChanged,
             controller: controller,
-            validator: (String? text) {
-              if (text!.isEmpty) {
-                return "Email não pode ser vazio";
-              }
-              return null;
-            },
+            validator: validator ??
+                (String? text) {
+                  if (text!.isEmpty) {
+                    return "Email não pode ser vazio";
+                  }
+                  return null;
+                },
             obscureText: obscure ?? false,
             maxLines: maxLines,
             minLines: 1,

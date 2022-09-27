@@ -12,10 +12,8 @@ import 'package:share/share.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class ProfileProjectPage extends StatefulWidget {
-  ProfileProjectPage(
-      {super.key, required this.user, required this.type, this.controller});
+  ProfileProjectPage({super.key, required this.type, this.controller});
 
-  Stream<Map<String, dynamic>> user;
   String type;
   PageController? controller;
 

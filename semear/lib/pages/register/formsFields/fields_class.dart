@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:semear/apis/api_form_validation.dart';
 import 'package:semear/models/bank.dart';
-import 'package:semear/pages/register/validations.dart';
+import 'package:semear/validators/fields_validations.dart';
 import 'package:semear/pages/register/formsFields/forms_field.dart';
 
 Validations validations = Validations();

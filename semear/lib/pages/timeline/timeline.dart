@@ -7,14 +7,9 @@ import 'package:semear/widgets/post_container.dart';
 import 'chat_page.dart';
 
 class TimeLine extends StatefulWidget {
-  TimeLine(
-      {super.key,
-      required this.controller,
-      required this.user,
-      required this.type});
+  TimeLine({super.key, required this.controller, required this.type});
 
   PageController controller;
-  Stream<Map<String, dynamic>> user;
   String type;
   @override
   State<TimeLine> createState() => _TimeLineState();
@@ -41,8 +36,7 @@ class _TimeLineState extends State<TimeLine> {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) =>
-                              PublicationPage(user: widget.user),
+                          builder: (context) => PublicationPage(),
                         ),
                       );
                     },

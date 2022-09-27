@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker_for_web/image_picker_for_web.dart';
 
 class ImageSourceSheet extends StatelessWidget {
   final Function(File)? onImageSelected;
@@ -13,13 +15,6 @@ class ImageSourceSheet extends StatelessWidget {
     if (image != null) {
       CroppedFile? croppedImage = (await ImageCropper().cropImage(
         sourcePath: image.path,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.ratio4x3,
-          CropAspectRatioPreset.ratio16x9
-        ],
         aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0),
         uiSettings: [
           /// this settings is required for Web
@@ -27,12 +22,12 @@ class ImageSourceSheet extends StatelessWidget {
             context: context,
             presentStyle: CropperPresentStyle.dialog,
             boundary: const CroppieBoundary(
-              width: 520,
-              height: 520,
+              width: 400,
+              height: 400,
             ),
             viewPort: const CroppieViewPort(
-              width: 480,
-              height: 480,
+              width: 400,
+              height: 400,
               type: 'rectangle',
             ),
             enableExif: true,
@@ -41,7 +36,9 @@ class ImageSourceSheet extends StatelessWidget {
           )
         ],
       ));
+
       File? newImage = File(croppedImage!.path);
+
       Navigator.of(context).pop();
       onImageSelected!(newImage);
     }

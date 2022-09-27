@@ -4,6 +4,7 @@ import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
 import 'package:semear/blocs/homescreen_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
+import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/donor/donor_profile_page.dart';
 import 'package:semear/pages/profile/missionary/missionary_profile_page.dart';
 import 'package:semear/pages/timeline/home_page.dart';
@@ -21,29 +22,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late Map<String, dynamic> pages;
+  final PageController _pageController = PageController();
+  late HomeScreenBloc _homeScreenBloc;
+  late AsyncSnapshot blocAsAsync;
+  final userBloc = BlocProvider.getBloc<UserBloc>();
+
   @override
   void initState() {
     super.initState();
 
-    _homeScreenBloc = HomeScreenBloc();
     pages = {
       'church': ChurchProfilePage(user: 'me'),
-      'project': ProfileProjectPage(type: 'me', user: _homeScreenBloc.outUser),
+      'project': ProfileProjectPage(type: 'me'),
       'missionary': ProfileMissionaryPage(user: 'me'),
       'donor': DonorProfilePage(user: 'me'),
     };
-    print("TESTEEE: ${_homeScreenBloc.outUser}");
-    if (userBloc.outUser.category == 'AnonymousDonor') {
-      items.removeAt(4);
-    }
-    _pageController = PageController();
+    print("TESTEEE: "); //${userBloc.outUser.category}");
   }
-
-  late Map<String, dynamic> pages;
-  late PageController _pageController;
-  late HomeScreenBloc _homeScreenBloc;
-  late AsyncSnapshot blocAsAsync;
-  final userBloc = BlocProvider.getBloc<UserBloc>();
 
   int _page = 0;
 
@@ -93,26 +89,29 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           items: items,
         ),
-        body: PageView(
-          physics: const NeverScrollableScrollPhysics(),
-          controller: _pageController,
-          onPageChanged: (p) {
-            setState(() {
-              _page = p;
-            });
-          },
-          children: <Widget>[
-            HomePage(
-              user: _homeScreenBloc.outUser,
-              type: 'me',
-            ),
-            ProjectsPage(controller: _pageController),
-            Container(color: const Color(0xffa23673A)),
-            const TransactionPage(),
-            userBloc.outUser.category != 'AnonymousDonor'
-                ? pages[userBloc.outUser.category]
-                : SizedBox()
-          ],
+        body: StreamBuilder<User>(
+          stream: userBloc.outUser,
+          builder: (context, snapshot) => PageView(
+            physics: const NeverScrollableScrollPhysics(),
+            controller: _pageController,
+            onPageChanged: (p) {
+              setState(() {
+                _page = p;
+              });
+            },
+            children: <Widget>[
+              HomePage(
+                type: 'me',
+              ),
+              ProjectsPage(controller: _pageController),
+              Container(color: const Color(0xffa23673A)),
+              const TransactionPage(),
+              snapshot.data != null &&
+                      snapshot.data!.category != 'AnonymousDonor'
+                  ? pages[snapshot.data!.category]
+                  : SizedBox()
+            ],
+          ),
         ),
       ),
     );

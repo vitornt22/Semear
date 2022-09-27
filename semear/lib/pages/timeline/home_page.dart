@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:semear/blocs/homescreen_bloc.dart';
+import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/timeline/notifications%20_page.dart';
 import 'package:semear/pages/profile/project/project_profile_page.dart';
 
@@ -9,8 +10,7 @@ import 'timeline.dart';
 
 // ignore: must_be_immutable
 class HomePage extends StatefulWidget {
-  HomePage({super.key, required this.user, required this.type});
-  Stream<Map<String, dynamic>> user;
+  HomePage({super.key, required this.type});
   String type;
 
   @override
@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    print("CHEGANDO NA HOME PAGE E PRINTANDO: ${widget.user}");
+    print("CHEGANDO NA HOME PAGE E PRINTANDO:");
     _pageController = PageController();
   }
 
@@ -42,11 +42,9 @@ class _HomePageState extends State<HomePage> {
             });
           },
           children: <Widget>[
-            TimeLine(
-                controller: _pageController, type: 'me', user: widget.user),
+            TimeLine(controller: _pageController, type: 'me'),
             NotificationsPage(controller: _pageController),
             ProfileProjectPage(
-              user: widget.user,
               type: widget.type,
               controller: _pageController,
             )

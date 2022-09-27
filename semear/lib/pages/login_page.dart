@@ -5,7 +5,7 @@ import 'package:semear/blocs/login_bloc.dart';
 import 'package:semear/pages/home_screen.dart';
 import 'package:semear/pages/initial_page.dart';
 import 'package:semear/pages/register/register_type.dart';
-import 'package:semear/pages/register/validations.dart';
+import 'package:semear/validators/fields_validations.dart';
 import 'package:semear/widgets/input_login_text.dart';
 
 class LoginPage extends StatefulWidget {
@@ -119,22 +119,25 @@ class _LoginPageState extends State<LoginPage> {
                                       if (!currentFocus.hasPrimaryFocus) {
                                         currentFocus.unfocus();
                                       }
-                                      bool a = await _loginBloc.submit();
-                                      if (a == true) {
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute<dynamic>(
-                                            builder: (BuildContext context) =>
-                                                HomeScreen(user: 'ola'),
-                                          ),
+                                      _loginBloc.submit().then((a) {
+                                        if (a == true) {
+                                          print("A é igual a true");
+                                          Navigator.pushAndRemoveUntil(
+                                            context,
+                                            MaterialPageRoute<dynamic>(
+                                              builder: (BuildContext contex) =>
+                                                  HomeScreen(user: 'ola'),
+                                            ),
 
-                                          (route) =>
-                                              false, //if you want to disable back feature set to false
-                                        );
-                                      } else if (a == false) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(snackBar);
-                                      }
+                                            (route) =>
+                                                false, //if you want to disable back feature set to false
+                                          );
+                                        } else if (a == false) {
+                                          print("A é igual a FALSE");
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(snackBar);
+                                        }
+                                      });
                                     }
                                   : null,
                               child: Text(

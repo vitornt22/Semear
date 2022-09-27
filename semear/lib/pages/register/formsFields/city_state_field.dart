@@ -4,7 +4,7 @@ import 'package:semear/apis/api_form_validation.dart';
 import 'package:semear/models/city.dart';
 import 'package:semear/models/uf.dart';
 import 'dart:async';
-import 'package:semear/pages/register/validations.dart';
+import 'package:semear/validators/fields_validations.dart';
 
 ApiForm apiForm = ApiForm();
 Validations validations = Validations();

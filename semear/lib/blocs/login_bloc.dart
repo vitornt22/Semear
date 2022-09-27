@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:semear/pages/register/project_register.dart';
 import 'package:semear/validators/login_validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -59,12 +60,15 @@ class LoginBloc extends BlocBase with LoginValidators {
   Future<bool> login() async {
     print('${_emailController.valueOrNull}');
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    bool checkEmail = await apiForm.checkEmail(_emailController.value);
+    if (checkEmail == false) return false;
     http.Response response = await http.post(
       Uri.parse("https://backend-semear.herokuapp.com/user/api/token/"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
-        "email": _emailController.valueOrNull,
-        "password": _passwordController.valueOrNull
+        "email": _emailController.value,
+        "password": _passwordController.value
       }),
     );
 

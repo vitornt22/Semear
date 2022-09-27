@@ -87,11 +87,9 @@ class ApiForm {
   }
 
   Future<Map> verifyCnpj(String? cnpj) async {
-    print('CNPJ ${cnpj}');
     http.Response response =
         await http.get(Uri.parse("https://publica.cnpj.ws/cnpj/$cnpj"));
 
-    print(response.body);
     return json.decode(response.body);
   }
 }

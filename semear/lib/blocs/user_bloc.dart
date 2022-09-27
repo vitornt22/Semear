@@ -8,7 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserBloc extends BlocBase {
   final _user = BehaviorSubject<User>();
 
-  User get outUser => _user.value;
+  Stream<User> get outUser => _user.stream;
+  User get outUserValue => _user.value;
 
   Sink get inUser => _user.sink;
 
@@ -21,13 +22,13 @@ class UserBloc extends BlocBase {
     //if there is data saved on SharedPreferences
     if (sharedPreferences.getString('map') != null) {
       String? encodedMap = sharedPreferences.getString('map');
-      sharedPreferences.clear();
 
       Map<String, dynamic> decodedMap = json.decode(encodedMap!);
 
       final userrr = User.fromJson(decodedMap['category']);
-      _user.sink.add(userrr);
+      _user.add(userrr);
       print("OBJECT USERRRRRR: ${_user.value}");
+      print("CATEGORU MAP: ${decodedMap['category']}");
 
       print("PRINT 2: $decodedMap");
 
@@ -60,6 +61,14 @@ class UserBloc extends BlocBase {
               "password": decodedMap["password"]
             }),
           );
+
+          http.Response userData = await http.get(
+            Uri.parse(
+                "https://backend-semear.herokuapp.com/user/api/${decodedMap['email']}/getUserData/"),
+            headers: {"Content-Type": "application/json"},
+          );
+
+          decodedMap['category'] = jsonDecode(userData.body)["user"];
           decodedMap["refresh"] = jsonDecode(loginAgain.body)["refresh"];
           decodedMap["access"] = jsonDecode(loginAgain.body)["access"];
         } else {

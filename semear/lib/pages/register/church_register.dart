@@ -9,7 +9,7 @@ import 'package:semear/models/church_model.dart';
 import 'package:semear/pages/login_page.dart';
 import 'package:semear/pages/register/formsFields/city_state_field.dart';
 import 'package:semear/pages/register/formsFields/fields_class.dart';
-import 'package:semear/pages/register/validations.dart';
+import 'package:semear/validators/fields_validations.dart';
 import 'package:semear/widgets/alert.dart';
 import 'package:semear/pages/register/formsFields/forms_field.dart';
 import 'package:semear/widgets/circular_progress.dart';

@@ -182,8 +182,7 @@ class _DonorRegisterState extends State<DonorRegister> {
                                                           (context, snapshot) {
                                                         if (snapshot.hasData) {
                                                           return LoginPage(
-                                                            category: "donor",
-                                                            is_register: true,
+                                                            isRegister: true,
                                                           );
                                                         } else if (snapshot
                                                             .hasError) {

@@ -1,6 +1,9 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
+import 'package:semear/blocs/homescreen_bloc.dart';
+import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/pages/profile/donor/donor_profile_page.dart';
 import 'package:semear/pages/profile/missionary/missionary_profile_page.dart';
 import 'package:semear/pages/timeline/home_page.dart';
@@ -10,24 +13,39 @@ import 'package:semear/pages/search/projects_page.dart';
 import 'package:semear/pages/transaction/transaction_page.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({super.key, required this.category, required this.user});
+  HomeScreen({super.key, required this.user});
 
   String user;
-  String category;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late PageController _pageController;
-  int _page = 0;
+  @override
+  void initState() {
+    super.initState();
 
-  Map<String, dynamic> pages = {
-    'church': ChurchProfilePage(user: 'me'),
-    'project': ProfileProjectPage(user: 'me'),
-    'missionary': ProfileMissionaryPage(user: 'me'),
-    'donor': DonorProfilePage(user: 'me'),
-  };
+    _homeScreenBloc = HomeScreenBloc();
+    pages = {
+      'church': ChurchProfilePage(user: 'me'),
+      'project': ProfileProjectPage(type: 'me', user: _homeScreenBloc.outUser),
+      'missionary': ProfileMissionaryPage(user: 'me'),
+      'donor': DonorProfilePage(user: 'me'),
+    };
+    print("TESTEEE: ${_homeScreenBloc.outUser}");
+    if (userBloc.outUser.category == 'AnonymousDonor') {
+      items.removeAt(4);
+    }
+    _pageController = PageController();
+  }
+
+  late Map<String, dynamic> pages;
+  late PageController _pageController;
+  late HomeScreenBloc _homeScreenBloc;
+  late AsyncSnapshot blocAsAsync;
+  final userBloc = BlocProvider.getBloc<UserBloc>();
+
+  int _page = 0;
 
   List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(
@@ -51,17 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
       label: 'Perfil',
     ),
   ];
-
-  @override
-  void initState() {
-    // ignore: todo
-    // TODO: implement initState
-    super.initState();
-    if (widget.category == 'AnonymousDonor') {
-      items.removeAt(4);
-    }
-    _pageController = PageController();
-  }
 
   @override
   void dispose() {
@@ -95,12 +102,15 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
           children: <Widget>[
-            HomePage(user: 'ola'),
+            HomePage(
+              user: _homeScreenBloc.outUser,
+              type: 'me',
+            ),
             ProjectsPage(controller: _pageController),
             Container(color: const Color(0xffa23673A)),
             const TransactionPage(),
-            widget.category != 'AnonymousDonor'
-                ? pages[widget.category]
+            userBloc.outUser.category != 'AnonymousDonor'
+                ? pages[userBloc.outUser.category]
                 : SizedBox()
           ],
         ),

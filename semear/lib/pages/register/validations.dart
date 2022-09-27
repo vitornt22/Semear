@@ -22,6 +22,8 @@ class Validations {
       return 'Preencha.';
     } else if (fieldContent.length < 8) {
       return 'Senha deve conter 8 caracteres';
+    } else if (fieldContent.indexOf(' ') > 0) {
+      return 'Senha não deve conter espaços';
     }
 
     return null;
@@ -69,6 +71,8 @@ class Validations {
   String? checkUsernameValidation(String? fieldContent) {
     if (fieldContent!.isEmpty) {
       return 'Campo obrigatório.';
+    } else if (fieldContent.indexOf(' ') > 0) {
+      return 'Senha não deve conter espaços';
     } else if (fieldContent.length > 15) {
       return 'Nome de usuário deve ser menor';
     } else if (fieldContent == '  Nome de usuário já existe') {

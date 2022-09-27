@@ -6,9 +6,9 @@ import 'package:semear/widgets/head_post.dart';
 
 // ignore: must_be_immutable
 class PostContainer extends StatefulWidget {
-  PostContainer({super.key, required this.user, required this.controller});
+  PostContainer({super.key, required this.type, required this.controller});
 
-  String user;
+  String type;
   PageController controller;
   @override
   State<PostContainer> createState() => _PostContainerState();
@@ -26,7 +26,7 @@ class _PostContainerState extends State<PostContainer> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Divider(),
-          HeadPost(user: widget.user, controller: widget.controller),
+          HeadPost(user: widget.type, controller: widget.controller),
           const Divider(),
           const SizedBox(
             height: 4.0,

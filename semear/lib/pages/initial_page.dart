@@ -51,8 +51,7 @@ class InitialPage extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) {
                             return LoginPage(
-                              is_register: false,
-                              category: 'project',
+                              isRegister: false,
                             );
                           },
                         ),
@@ -106,7 +105,6 @@ class InitialPage extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) {
                             return HomeScreen(
-                              category: 'AnonymousDonor',
                               user: 'ola',
                             );
                           },

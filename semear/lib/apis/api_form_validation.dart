@@ -6,6 +6,14 @@ import 'package:semear/models/city.dart';
 import 'package:semear/models/uf.dart';
 
 class ApiForm {
+  getAllBanks() async {
+    http.Response response = await http.get(
+      Uri.parse("https://brasilapi.com.br/api/banks/v1"),
+    );
+
+    return jsonDecode(response.body);
+  }
+
   Future<Map> getChurch(cnpj) async {
     http.Response response = await http.get(Uri.parse(
         "https://backend-semear.herokuapp.com/church/api/$cnpj/getChurchAddress/"));

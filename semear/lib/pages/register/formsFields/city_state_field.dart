@@ -3,6 +3,7 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:semear/apis/api_form_validation.dart';
 import 'package:semear/models/city.dart';
 import 'package:semear/models/uf.dart';
+import 'dart:async';
 import 'package:semear/pages/register/validations.dart';
 
 ApiForm apiForm = ApiForm();

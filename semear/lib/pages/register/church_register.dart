@@ -1,4 +1,4 @@
-// ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, avoid_print
+// ignore_for_file: use_full_hex_values_for_flutter_colors, avoid_print
 
 import 'dart:async';
 import 'dart:convert';
@@ -29,7 +29,6 @@ class ChurchRegister extends StatefulWidget {
 
 class _ChurchRegisterState extends State<ChurchRegister> {
   int _currentStep = 0;
-  bool enableCity = false;
   Bank? selectedItem;
   bool showProgress = false;
 
@@ -129,18 +128,6 @@ class _ChurchRegisterState extends State<ChurchRegister> {
     }
   }
 
-  Future<List<Bank>> getBanks(String? query) async {
-    http.Response response =
-        await http.get(Uri.parse("https://brasilapi.com.br/api/banks/v1"));
-
-    final List banks = jsonDecode(response.body);
-    return banks.map((json) => Bank.fromJson(json)).where((user) {
-      final nameLower = user.name!.toLowerCase();
-      final queryLower = query!.toLowerCase();
-      return nameLower.contains(queryLower);
-    }).toList();
-  }
-
   getCep() async {
     String cep = zipCodeController.text.replaceAll(RegExp(r'[^\w\s]+'), '');
     http.Response response =
@@ -169,7 +156,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                     fit: BoxFit.cover,
                     colorFilter: ColorFilter.mode(
                         Colors.black.withOpacity(0.2), BlendMode.dstATop),
-                    image: AssetImage('assets/images/projeto.jpg')),
+                    image: const AssetImage('assets/images/projeto.jpg')),
                 gradient: const LinearGradient(
                   colors: [
                     Color(0xffa23673A),
@@ -192,7 +179,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                   child: Stepper(
                       type: StepperType.horizontal,
                       currentStep: _currentStep,
-                      physics: ScrollPhysics(),
+                      physics: const ScrollPhysics(),
                       onStepCancel: () {
                         if (_currentStep > 0) {
                           setState(() {
@@ -263,8 +250,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                                   builder: (context, snapshot) {
                                     if (snapshot.hasData) {
                                       return LoginPage(
-                                        category: "church",
-                                        is_register: true,
+                                        isRegister: true,
                                       );
                                     } else if (snapshot.hasError) {
                                       return ErrorScreen(
@@ -272,7 +258,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                                       );
                                     }
 
-                                    return LoadingScreen();
+                                    return const LoadingScreen();
                                   },
                                 );
                               }));
@@ -283,7 +269,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                       steps: [
                         Step(
                           isActive: _currentStep >= 0,
-                          title: Text("Validação"),
+                          title: const Text("Validação"),
                           content: Form(
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
@@ -293,7 +279,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                         ),
                         Step(
                           isActive: _currentStep >= 1,
-                          title: Text("Informações"),
+                          title: const Text("Informações"),
                           content: Form(
                             autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
@@ -303,7 +289,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                         ),
                         Step(
                           isActive: _currentStep >= 2,
-                          title: Text("Dados"),
+                          title: const Text("Dados"),
                           content: Form(
                             key: _formKey[2],
                             child: dataChurchForms(),
@@ -326,7 +312,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: 55),
+              const SizedBox(height: 55),
               FieldClass(controller: cnpjController, id: 'cnpj'),
               FieldClass(
                 controller: denominationController,
@@ -346,7 +332,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
               heightFactor: 15,
               child: Visibility(
                 visible: showProgress,
-                child: CircularProgressIndicator(),
+                child: const CircularProgressIndicator(),
               )),
         ],
       ),
@@ -376,7 +362,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                       id: 'password',
                     ),
                   ),
-                  SizedBox(width: 5),
+                  const SizedBox(width: 5),
                   Expanded(
                     child: FieldClass(
                       controller: confirmPasswordController,
@@ -399,7 +385,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                     child: FieldClass(
                         controller: contactController, id: 'contact'),
                   ),
-                  SizedBox(width: 5),
+                  const SizedBox(width: 5),
                   Expanded(
                       child: FieldClass(
                     controller: zipCodeController,
@@ -442,7 +428,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                         hint: 'Bela Vista',
                         label: 'Bairro',
                       )),
-                  SizedBox(width: 5),
+                  const SizedBox(width: 5),
                   Expanded(
                     child: FieldClass(
                       controller: numberController,
@@ -465,14 +451,14 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               )
             ],
           ),
           Visibility(
               visible: showProgress,
-              child: Center(
+              child: const Center(
                 heightFactor: 20,
                 child: CircularProgressIndicator(),
               ))
@@ -504,10 +490,10 @@ class _ChurchRegisterState extends State<ChurchRegister> {
               ),
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     children: [
-                      Divider(
+                      const Divider(
                         thickness: 1,
                         color: Colors.green,
                       ),
@@ -530,7 +516,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                                 id: 'agency',
                                 controller: agencyController,
                               )),
-                          SizedBox(width: 5),
+                          const SizedBox(width: 5),
                           Expanded(
                             child: FieldClass(
                               id: 'digit',
@@ -550,7 +536,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                               label: 'Conta',
                             ),
                           ),
-                          SizedBox(width: 5),
+                          const SizedBox(width: 5),
                           Expanded(
                             child: FormsField(
                               keyboard: TextInputType.text,
@@ -565,7 +551,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                 )
               ]),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Card(
           elevation: 10,
           color: Colors.white,
@@ -586,20 +572,22 @@ class _ChurchRegisterState extends State<ChurchRegister> {
             ),
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Column(
                   children: [
-                    Divider(
+                    const Divider(
                       thickness: 1,
                       color: Colors.green,
                     ),
                     InputDecorator(
-                      decoration: InputDecoration(border: OutlineInputBorder()),
+                      decoration:
+                          const InputDecoration(border: OutlineInputBorder()),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButtonFormField(
                             validator: validations.checkEmpty,
                             isExpanded: true,
-                            hint: Text('Tipo de chave'),
+                            hint: const Text('Tipo de chave'),
                             value: dropdownValue,
                             alignment: Alignment.center,
                             onChanged: (String? selectedValue) {

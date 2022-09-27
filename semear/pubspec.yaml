@@ -48,6 +48,18 @@ dependencies:
   share: ^2.0.4
   flutter_native_splash: ^2.2.9
   flutter_launcher_icons: ^0.10.0
+  bloc_pattern: ^3.0.1
+  rxdart: ^0.27.5
+  dropdown_plus: ^0.0.9
+  image_picker: ^0.8.5+3
+  image_cropper: ^3.0.0
+  flutter_bloc: ^8.1.1
+
+
+
+
+
+
 
 
 flutter_native_splash:
@@ -57,12 +69,10 @@ flutter_native_splash:
   ios: true
 
 flutter_icons:
-  ios: true
   android: true
-  image_path: "assets/images/iconSemear2.png"
-  remove_alpha_ios: true 
-  adaptive_icon_background: "#23673A"
-  adaptive_icon_foreground: "assets/images/iconSemear2.png"
+  ios: true
+  image_path: "assets/images/icon.png"
+  remove_alpha_ios: true
 
 
   

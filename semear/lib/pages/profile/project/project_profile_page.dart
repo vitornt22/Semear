@@ -12,9 +12,11 @@ import 'package:share/share.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class ProfileProjectPage extends StatefulWidget {
-  ProfileProjectPage({super.key, required this.user, this.controller});
+  ProfileProjectPage(
+      {super.key, required this.user, required this.type, this.controller});
 
-  String user;
+  Stream<Map<String, dynamic>> user;
+  String type;
   PageController? controller;
 
   @override
@@ -47,7 +49,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
       slivers: [
         SliverAppBar(
           leading: Visibility(
-            visible: widget.user == 'me' ? false : true,
+            visible: widget.type == 'me' ? false : true,
             child: IconButton(
               onPressed: () {
                 if (widget.controller != null) {
@@ -160,7 +162,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    widget.user == 'me'
+                    widget.type == 'me'
                         ? ButtonFilled(
                             onClick: () {},
                             text: 'Publicar',

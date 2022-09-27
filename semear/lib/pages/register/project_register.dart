@@ -308,8 +308,7 @@ class _ProjectRegisterState extends State<ProjectRegister> {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return LoginPage(
-                  category: "missionary",
-                  is_register: true,
+                  isRegister: true,
                 );
               } else if (snapshot.hasError) {
                 return ErrorScreen(

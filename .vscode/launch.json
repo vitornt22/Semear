@@ -1,0 +1,40 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+       
+        
+        
+        //{
+           //"name": "Flutter",
+           // "request": "launch",
+           // "type": "dart",
+          // "args": ["-d", "chrome","--web-port", "7357"],
+      // },
+
+        {
+            "name": "semear",
+            "cwd": "semear",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "semear (profile mode)",
+            "cwd": "semear",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "semear (release mode)",
+            "cwd": "semear",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+
+       
+    ]
+}

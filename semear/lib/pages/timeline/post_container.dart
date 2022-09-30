@@ -1,14 +1,20 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:semear/models/publication_model.dart';
 import 'package:semear/widgets/comments.dart';
 import 'package:semear/widgets/head_post.dart';
 
 // ignore: must_be_immutable
 class PostContainer extends StatefulWidget {
-  PostContainer({super.key, required this.type, required this.controller});
+  PostContainer(
+      {super.key,
+      required this.publication,
+      required this.type,
+      required this.controller});
 
   String type;
+  Publication publication;
   PageController controller;
   @override
   State<PostContainer> createState() => _PostContainerState();
@@ -26,7 +32,10 @@ class _PostContainerState extends State<PostContainer> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Divider(),
-          HeadPost(user: widget.type, controller: widget.controller),
+          HeadPost(
+              publication: widget.publication,
+              user: widget.type,
+              controller: widget.controller),
           const Divider(),
           const SizedBox(
             height: 4.0,

@@ -1,14 +1,16 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
+import 'package:semear/blocs/publication_bloc.dart';
+import 'package:semear/models/publication_model.dart';
 import 'package:semear/pages/timeline/publication.dart';
-import 'package:semear/widgets/post_container.dart';
+import 'package:semear/pages/timeline/post_container.dart';
 
 import 'chat_page.dart';
 
 class TimeLine extends StatefulWidget {
   TimeLine({super.key, required this.controller, required this.type});
-
   PageController controller;
   String type;
   @override
@@ -16,6 +18,15 @@ class TimeLine extends StatefulWidget {
 }
 
 class _TimeLineState extends State<TimeLine> {
+  final _pubBloc = BlocProvider.getBloc<PublicationBloc>();
+
+  @override
+  void initState() {
+    super.initState();
+    print("OLA TIMELINE");
+    PublicationBloc();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -64,16 +75,27 @@ class _TimeLineState extends State<TimeLine> {
             const SizedBox(width: 15),
           ],
         ),
-        Flexible(
-          child: ListView.builder(
-              key: const PageStorageKey<String>('page'),
-              shrinkWrap: true,
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return PostContainer(
-                    type: widget.type, controller: widget.controller);
-              }),
-        )
+        StreamBuilder<List<Publication>>(
+            stream: _pubBloc.outPublications,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Flexible(
+                  child: ListView.builder(
+                      key: const PageStorageKey<String>('page'),
+                      shrinkWrap: true,
+                      itemCount: 10,
+                      itemBuilder: (context, index) {
+                        print("ENTROUI VITOR");
+                        return PostContainer(
+                            publication: snapshot.data![index],
+                            type: widget.type,
+                            controller: widget.controller);
+                      }),
+                );
+              } else {
+                return Container(color: Colors.yellow);
+              }
+            }),
       ],
     );
   }

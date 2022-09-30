@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:semear/models/bank.dart';
-import 'package:semear/models/city.dart';
+import 'package:semear/models/city_model.dart';
 import 'package:semear/models/uf.dart';
 
 class ApiForm {

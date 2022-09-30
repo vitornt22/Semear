@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors, must_be_immutable
 
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
-import 'package:semear/blocs/login_bloc.dart';
+import 'package:semear/blocs/user_bloc.dart';
+import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/home_screen.dart';
 import 'package:semear/pages/initial_page.dart';
 import 'package:semear/pages/register/register_type.dart';
@@ -21,7 +23,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _loginBloc = LoginBloc();
+  final _userBloc = BlocProvider.getBloc<UserBloc>();
 
   Validations validations = Validations();
   bool showProgress = false;
@@ -55,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 40),
               child: StreamBuilder(
-                stream: _loginBloc.outState,
+                stream: _userBloc.outState,
                 builder: (context, snapshot) => Stack(
                   children: [
                     Column(
@@ -70,18 +72,18 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(height: 60),
                         InputLoginField(
                           text: "Email",
-                          stream: _loginBloc.outEmail,
-                          onChanged: _loginBloc.changeEmail,
+                          stream: _userBloc.outEmail,
+                          onChanged: _userBloc.changeEmail,
                         ),
                         InputLoginField(
                           text: "SENHA",
-                          stream: _loginBloc.outPassword,
-                          onChanged: _loginBloc.changePassword,
+                          stream: _userBloc.outPassword,
+                          onChanged: _userBloc.changePassword,
                           suffixIcon: IconButton(
                             onPressed: () {},
                             icon: StreamBuilder<bool>(
                               initialData: false,
-                              stream: _loginBloc.outVisibility,
+                              stream: _userBloc.outVisibility,
                               builder: (context, valueBool) => Icon(
                                 valueBool.data == true
                                     ? Icons.visibility
@@ -101,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         SizedBox(height: 20),
                         StreamBuilder<bool>(
-                          stream: _loginBloc.outSubmitedValid,
+                          stream: _userBloc.outSubmitedValid,
                           builder: (context, data) => SizedBox(
                             height: 50,
                             child: ElevatedButton(
@@ -119,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                                       if (!currentFocus.hasPrimaryFocus) {
                                         currentFocus.unfocus();
                                       }
-                                      _loginBloc.submit().then((a) {
+                                      _userBloc.submit().then((a) {
                                         if (a == true) {
                                           print("A é igual a true");
                                           Navigator.pushAndRemoveUntil(

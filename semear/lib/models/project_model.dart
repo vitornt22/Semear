@@ -1,4 +1,5 @@
 import 'package:semear/models/church_model.dart';
+import 'package:semear/models/follower_model.dart';
 import 'package:semear/models/informations_model.dart';
 import 'package:semear/models/user_model.dart';
 
@@ -7,6 +8,8 @@ class Project {
   User? user;
   Adress? adress;
   Church? church;
+  List<Follower>? following;
+  List<Follower>? followers;
   int? idChurch;
   int? idAdress;
   String? name;
@@ -16,6 +19,8 @@ class Project {
       this.user,
       this.adress,
       this.church,
+      this.following,
+      this.followers,
       this.idChurch,
       this.idAdress,
       this.name});
@@ -25,6 +30,18 @@ class Project {
     user = json['user'] != null ? User.fromJson(json['user']) : null;
     adress = json['adress'] != null ? Adress.fromJson(json['adress']) : null;
     church = json['church'] != null ? Church.fromJson(json['church']) : null;
+    if (json['following'] != null) {
+      following = <Follower>[];
+      json['following'].forEach((v) {
+        following!.add(Follower.fromJson(v));
+      });
+    }
+    if (json['followers'] != null) {
+      followers = <Follower>[];
+      json['followers'].forEach((v) {
+        followers!.add(Follower.fromJson(v));
+      });
+    }
     idChurch = json['id_church'];
     idAdress = json['id_adress'];
     name = json['name'];
@@ -41,6 +58,12 @@ class Project {
     }
     if (church != null) {
       data['church'] = church!.toJson();
+    }
+    if (following != null) {
+      data['following'] = following!.map((v) => v.toJson()).toList();
+    }
+    if (followers != null) {
+      data['followers'] = followers!.map((v) => v.toJson()).toList();
     }
     data['id_church'] = idChurch;
     data['id_adress'] = idAdress;

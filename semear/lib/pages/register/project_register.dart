@@ -73,15 +73,17 @@ class _ProjectRegisterState extends State<ProjectRegister> {
         "user": {
           "username": usernameController.text,
           "email": emailController.text,
-          "category": "missionary",
+          "category": "project",
           "can_post": true,
-          "password": passwordController.text
+          "password": passwordController.text,
         },
         "adress": adressMap,
         "church": null,
         "id_church": idChurch,
         "id_adress": idAdress,
-        "name": nameController.text
+        "name": nameController.text,
+        "following": null,
+        "follower": null
       }),
     );
 
@@ -98,7 +100,10 @@ class _ProjectRegisterState extends State<ProjectRegister> {
         "id_adress": idAdress,
         "fullName": nameController.text,
         "church": idChurch,
-        "adress": adressMap
+        "adress": adressMap,
+        "name": nameController.text,
+        "following": [],
+        "follower": []
       }),
     );
 

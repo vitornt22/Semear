@@ -1,13 +1,19 @@
 // ignore_for_file: prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
+import 'package:semear/models/publication_model.dart';
 import 'package:semear/pages/timeline/post_settings.dart';
 import 'package:semear/widgets/sugestion_avatar.dart';
 
 class HeadPost extends StatefulWidget {
-  HeadPost({super.key, required this.user, required this.controller});
+  HeadPost(
+      {super.key,
+      required this.publication,
+      required this.user,
+      required this.controller});
 
   String user;
+  Publication publication;
   PageController controller;
   @override
   State<HeadPost> createState() => _HeadPostState();
@@ -37,8 +43,8 @@ class _HeadPostState extends State<HeadPost> {
                       widget.user = 'vitor agora';
                       widget.controller.jumpToPage(2);
                     },
-                    child: const Text(
-                      'Jesus Visitando Familia',
+                    child: Text(
+                      widget.publication.project!.user!.username.toString(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.black,

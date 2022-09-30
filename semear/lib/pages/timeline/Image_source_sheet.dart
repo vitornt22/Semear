@@ -1,10 +1,8 @@
 import 'dart:io';
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker_for_web/image_picker_for_web.dart';
 
 class ImageSourceSheet extends StatelessWidget {
   final Function(File)? onImageSelected;

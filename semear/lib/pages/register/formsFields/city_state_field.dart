@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:semear/apis/api_form_validation.dart';
-import 'package:semear/models/city.dart';
+import 'package:semear/models/city_model.dart';
 import 'package:semear/models/uf.dart';
 import 'dart:async';
 import 'package:semear/validators/fields_validations.dart';

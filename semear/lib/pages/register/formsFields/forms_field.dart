@@ -2,10 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:flutter/services.dart';
 
 class FormsField extends StatefulWidget {
   FormsField(
       {super.key,
+      this.digit,
       this.autofill,
       this.cnpjController,
       this.onChangedVar,
@@ -21,6 +23,7 @@ class FormsField extends StatefulWidget {
       this.sizeBoxHeigth});
 
   bool? obscureText = false;
+  bool? digit;
   var onChangedVar;
   List<String>? autofill;
   GlobalKey<FormState>? formkey;
@@ -104,7 +107,9 @@ class _FormsFieldState extends State<FormsField> {
               (value) {
                 return null;
               },
-          inputFormatters: [mask],
+          inputFormatters: widget.digit == true
+              ? [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))]
+              : [mask],
           autofillHints: widget.autofill ?? [],
           keyboardType: widget.keyboard,
           controller: widget.controller,

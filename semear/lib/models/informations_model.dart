@@ -25,12 +25,12 @@ class Adress {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['zip_code'] = this.zipCode;
-    data['adress'] = this.adress;
-    data['number'] = this.number;
-    data['city'] = this.city;
-    data['uf'] = this.uf;
-    data['district'] = this.district;
+    data['zip_code'] = zipCode;
+    data['adress'] = adress;
+    data['number'] = number;
+    data['city'] = city;
+    data['uf'] = uf;
+    data['district'] = district;
     return data;
   }
 }
@@ -43,11 +43,13 @@ class BankData {
   String? digitAgency;
   String? account;
   String? digitAccount;
+  String? bankName;
 
   BankData(
       {this.holder,
       this.cnpj,
       this.bank,
+      this.bankName,
       this.agency,
       this.digitAgency,
       this.account,
@@ -55,6 +57,7 @@ class BankData {
 
   BankData.fromJson(Map<String, dynamic> json) {
     holder = json['holder'];
+    bankName = json['bankName'];
     cnpj = json['cnpj'];
     bank = json['bank'];
     agency = json['agency'];
@@ -65,13 +68,14 @@ class BankData {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['holder'] = this.holder;
-    data['cnpj'] = this.cnpj;
-    data['bank'] = this.bank;
-    data['agency'] = this.agency;
-    data['digitAgency'] = this.digitAgency;
-    data['account'] = this.account;
-    data['digitAccount'] = this.digitAccount;
+    data['holder'] = holder;
+    data['bankName'] = bankName;
+    data['cnpj'] = cnpj;
+    data['bank'] = bank;
+    data['agency'] = agency;
+    data['digitAgency'] = digitAgency;
+    data['account'] = account;
+    data['digitAccount'] = digitAccount;
     return data;
   }
 }

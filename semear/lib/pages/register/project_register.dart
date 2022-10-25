@@ -75,15 +75,14 @@ class _ProjectRegisterState extends State<ProjectRegister> {
           "email": emailController.text,
           "category": "project",
           "can_post": true,
-          "password": passwordController.text,
+          "password": passwordController.text
         },
         "adress": adressMap,
         "church": null,
         "id_church": idChurch,
         "id_adress": idAdress,
         "name": nameController.text,
-        "following": null,
-        "follower": null
+        "information": null
       }),
     );
 
@@ -252,6 +251,7 @@ class _ProjectRegisterState extends State<ProjectRegister> {
                                     .then((value) {
                                   setState(() {
                                     idAdress = 0;
+                                    idChurch = value['id'];
                                     adressMap = {
                                       "zip_code": zipCodeController.text,
                                       "adress": adressController.text,

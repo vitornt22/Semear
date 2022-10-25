@@ -1,9 +1,9 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
 import 'package:bloc_pattern/bloc_pattern.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:semear/blocs/publication_bloc.dart';
-import 'package:semear/models/publication_model.dart';
+import 'package:semear/blocs/publications_bloc.dart';
 import 'package:semear/pages/timeline/publication.dart';
 import 'package:semear/pages/timeline/post_container.dart';
 
@@ -13,25 +13,26 @@ class TimeLine extends StatefulWidget {
   TimeLine({super.key, required this.controller, required this.type});
   PageController controller;
   String type;
+
   @override
   State<TimeLine> createState() => _TimeLineState();
 }
 
 class _TimeLineState extends State<TimeLine> {
-  final _pubBloc = BlocProvider.getBloc<PublicationBloc>();
+  final _pubBloc = BlocProvider.getBloc<PublicationsBloc>();
 
+  //
   @override
   void initState() {
     super.initState();
-    print("OLA TIMELINE");
-    PublicationBloc();
+    _pubBloc.listPublications();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AppBar(
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
           backgroundColor: const Color(0xffa23673A),
           leadingWidth: 230,
           leading: const Padding(
@@ -75,28 +76,48 @@ class _TimeLineState extends State<TimeLine> {
             const SizedBox(width: 15),
           ],
         ),
-        StreamBuilder<List<Publication>>(
-            stream: _pubBloc.outPublications,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Flexible(
-                  child: ListView.builder(
-                      key: const PageStorageKey<String>('page'),
-                      shrinkWrap: true,
-                      itemCount: 10,
-                      itemBuilder: (context, index) {
-                        print("ENTROUI VITOR");
-                        return PostContainer(
-                            publication: snapshot.data![index],
-                            type: widget.type,
-                            controller: widget.controller);
-                      }),
-                );
-              } else {
-                return Container(color: Colors.yellow);
-              }
-            }),
-      ],
+        body: RefreshIndicator(
+          onRefresh: () async {
+            _pubBloc.disableButton.add(false);
+            _pubBloc.listPublications();
+          },
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+              dragDevices: {
+                PointerDeviceKind.touch,
+                PointerDeviceKind.mouse,
+              },
+            ),
+            child: SizedBox(
+              child: StreamBuilder<List<dynamic>>(
+                  stream: _pubBloc.outPublications,
+                  initialData: _pubBloc.outPublicationsValue,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return ListView.builder(
+                        key: const PageStorageKey<String>('page'),
+                        physics: BouncingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          print("ENTROUI VITOR");
+                          return PostContainer(
+                              index: index,
+                              publication: snapshot.data![index],
+                              type: widget.type,
+                              controller: widget.controller);
+                        },
+                      );
+                    } else {
+                      return Center(
+                        child: CircularProgressIndicator(color: Colors.green),
+                      );
+                    }
+                  }),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

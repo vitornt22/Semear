@@ -1,7 +1,9 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
+import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/church/church_list_validation_tab.dart';
+import 'package:semear/pages/profile/following_screen.dart';
 import 'package:semear/widgets/button_outlined_profile.dart';
 import 'package:semear/widgets/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
@@ -9,10 +11,12 @@ import 'package:semear/widgets/button_filled.dart';
 import 'missionary_tab.dart';
 
 class ChurchProfilePage extends StatefulWidget {
-  ChurchProfilePage({super.key, required this.user});
+  ChurchProfilePage(
+      {super.key, required this.user, required this.type, required this.first});
 
-  String user;
-
+  String type;
+  User user;
+  bool first;
   @override
   State<ChurchProfilePage> createState() => _ChurchProfilePageState();
 }
@@ -35,7 +39,7 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
       slivers: [
         SliverAppBar(
           leading: Visibility(
-            visible: widget.user == 'me' ? false : true,
+            visible: widget.type == 'me' ? false : true,
             child: IconButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -76,7 +80,7 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
                       children: [
                         Expanded(
                           child: Container(
-                            height: 120,
+                            height: 150,
                             color: Colors.white,
                             padding: const EdgeInsets.only(right: 10),
                             child: Padding(
@@ -85,7 +89,7 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   Row(
-                                    children: const [
+                                    children: [
                                       Expanded(
                                         child: Text(
                                           "Assembleia de Deus",
@@ -94,7 +98,14 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
                                               fontWeight: FontWeight.w700),
                                         ),
                                       ),
-                                      Icon(Icons.add)
+                                      Visibility(
+                                        visible:
+                                            widget.type == 'me' ? true : false,
+                                        child: IconButton(
+                                            tooltip: 'Adicionar publicação',
+                                            onPressed: () {},
+                                            icon: Icon(Icons.add_a_photo)),
+                                      )
                                     ],
                                   ),
                                   SizedBox(height: 10),
@@ -162,16 +173,29 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
                   children: [
                     Expanded(
                       child: ButtonFilled(
-                          text: 'Projetos que sigo', onClick: () {}),
+                          text: 'Projetos que segue',
+                          onClick: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FollowingScreen(
+                                  user: widget.user,
+                                  first: true,
+                                ),
+                              ),
+                            );
+                          }),
                     ),
-                    Visibility(
-                      child: Expanded(
-                        child: ButtonOutlinedProfile(
-                          onClick: () {},
-                          text: 'Seguir Projetos',
-                        ),
-                      ),
-                    ),
+                    widget.type == 'me'
+                        ? Expanded(
+                            child: ButtonFilled(
+                                text: 'Criar projeto', onClick: () {}))
+                        : Expanded(
+                            child: ButtonOutlinedProfile(
+                              onClick: () {},
+                              text: 'Seguir Projetos',
+                            ),
+                          ),
                   ],
                 ),
               ),
@@ -244,15 +268,25 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
                                   width: double.infinity,
                                   height: 80,
                                   child: ButtonFilled(
-                                    text: 'Voltar ao meu perfil',
+                                    text: widget.first == true
+                                        ? 'Voltar ao meu perfil'
+                                        : "Voltar aos comentários",
                                     onClick: () {
-                                      Navigator.of(context)
-                                          .popUntil((route) => route.isFirst);
+                                      print("WIDGET.FIRST, ${widget.first}");
+                                      widget.first == false
+                                          ? Navigator.of(context).popUntil(
+                                              (route) =>
+                                                  route.settings.arguments ==
+                                                  true)
+                                          : Navigator.of(context).popUntil(
+                                              (route) => route.isFirst == true);
                                     },
                                   ),
                                 ),
                                 body: ChurchProfilePage(
-                                  user: 'follower',
+                                  user: widget.user,
+                                  first: widget.first,
+                                  type: 'follower',
                                 ),
                               );
                             },

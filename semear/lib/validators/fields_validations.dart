@@ -81,6 +81,15 @@ class Validations {
     return null;
   }
 
+  String? checkValueFloatValidation(String? fieldContent) {
+    if (fieldContent!.isEmpty) {
+      return 'Campo obrigatório.';
+    } else if (double.parse(fieldContent) <= 0) {
+      return 'Valor deve ser maior que zero';
+    }
+    return null;
+  }
+
   String? checkChurchValidation(String? fieldContent) {
     if (fieldContent!.isEmpty) {
       return 'Campo obrigatório.';
@@ -93,7 +102,7 @@ class Validations {
   }
 
   String? checkEmpty(String? fieldContent) {
-    if (fieldContent!.isEmpty) {
+    if (fieldContent == null || fieldContent.isEmpty) {
       return 'Campo obrigatório.';
     }
 

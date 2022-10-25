@@ -57,7 +57,6 @@ class _ChurchRegisterState extends State<ChurchRegister> {
   TextEditingController accountDigitController = TextEditingController();
   TextEditingController bankController = TextEditingController();
   TextEditingController codeController = TextEditingController();
-
   // PI
   TextEditingController keyTypeController = TextEditingController();
   TextEditingController keyValueController = TextEditingController();
@@ -104,6 +103,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
         "bankData": {
           "holder": titularNamecontroller.text,
           "cnpj": cnpjController.text,
+          "bankName": bankController.text,
           "bank": codeController.text,
           "agency": agencyController.text,
           "digitAgency": agencyDigitController.text,
@@ -116,7 +116,8 @@ class _ChurchRegisterState extends State<ChurchRegister> {
         },
         "cnpj": cnpjController.text,
         "ministery": ministeryController.text,
-        "name": nameController.text
+        "name": nameController.text,
+        "information": null
       }),
     );
 

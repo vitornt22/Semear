@@ -5,45 +5,77 @@ import 'dart:io';
 
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:semear/apis/api_publication.dart';
 import 'package:semear/blocs/user_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:semear/models/comment_model.dart';
 import 'package:semear/models/publication_model.dart';
 
 class PublicationBloc extends BlocBase {
+  Map<int, int> likesNumber = {};
+  Map<int, int> commentsNumber = {};
+  Map<int, String> labels = {};
+
+  ApiPublication api = ApiPublication();
+
   final _imageControlller = BehaviorSubject<File?>();
+  final comments = BehaviorSubject<List<dynamic>>();
+  final disableButton = BehaviorSubject<bool>();
+  final labelsController = BehaviorSubject<Map<int, String>>();
   final _legendController = BehaviorSubject<String>();
   final _snackBarText = BehaviorSubject<String>();
   final _checkedValue = BehaviorSubject<bool>();
   final _checkedImage = BehaviorSubject<bool>();
   final _loadingController = BehaviorSubject<bool>();
-  final _publicationsController = BehaviorSubject<List<Publication>>();
+  final _publicationsController = BehaviorSubject<List<dynamic>>();
+  final _commentsController = BehaviorSubject<List<Comment>>();
 
   final userBloc = BlocProvider.getBloc<UserBloc>();
-
-  PublicationBloc() {
-    print("Constructor PUB: ");
-    listPublications();
-  }
+  final _publication = BehaviorSubject<Publication>();
+  final _likesPublication = BehaviorSubject<Map<int, int>>();
+  final _commentsPublication = BehaviorSubject<Map<int, int>>();
 
   @override
   void dispose() {
     _imageControlller.close();
+    _publication.close();
     _checkedValue.close();
     _imageControlller.close();
     _snackBarText.close();
     _checkedValue.close();
     _loadingController.close();
     _publicationsController.close();
+    labelsController.close();
+    _likesPublication.close();
+    _commentsController.close();
+    _commentsPublication.close();
+    disableButton.close();
+    comments.close();
+    _publication.close();
     super.dispose();
   }
 
-  Stream<List<Publication>> get outPublications =>
-      _publicationsController.stream;
+  Stream<List<dynamic>> get outPublications => _publicationsController.stream;
+
+  List<dynamic> get outPublicationsValue => _publicationsController.value;
+  Stream<Map<int, int>>? get outLikesPublication => _likesPublication.stream;
+  Stream<Map<int, int>>? get outCommentsPublication =>
+      _commentsPublication.stream;
+  Map<int, int>? get outLikesPublicationValue => _likesPublication.value;
+  Map<int, int>? get outCommentsPublicationValue =>
+      _commentsPublication.valueOrNull;
+
   Stream<bool>? get outLoading => _loadingController.stream;
   Stream<bool>? get outCheckedValue => _checkedValue.stream;
   Stream<bool>? get outCheckedImage => _checkedImage.stream;
+  Stream<bool>? get outDisabled => disableButton.stream;
+  Stream<List<dynamic>>? get outComments => comments.stream;
+  List<dynamic>? get outCommentsValue => comments.value;
+
   Stream<String> get outCaption =>
       _legendController.stream.transform(validateCaption);
+  Stream<Map<int, String>> get outLabel => labelsController.stream;
+  Stream<Publication> get outPublication => _publication.stream;
   Stream<String> get ouSnackBarText => _snackBarText.stream;
   Stream<File?> get outImage => _imageControlller.stream;
 
@@ -51,10 +83,35 @@ class PublicationBloc extends BlocBase {
 
   Sink get inChecked => _checkedValue.sink;
   Sink get inPublications => _publicationsController.sink;
+  Sink get inLabel => labelsController.sink;
+  Sink get inPublication => _publication.sink;
+  Sink get inDisabled => disableButton.sink;
+  Sink get inComments => comments.sink;
 
   Sink get inImage => _imageControlller.sink;
   Sink get inChekedImage => _checkedImage.sink;
   Sink get inSnackBarText => _snackBarText.sink;
+
+  void getCommentsPublication(publication) async {
+    final c = await api.getComments(publication);
+    comments.add(c);
+  }
+
+  void toggleNumberLikes(publication) {
+    likesNumber[publication.id] = publication.likes!.length;
+
+    _likesPublication.sink.add(likesNumber);
+  }
+
+  void toogleNumberComments(publication) {
+    commentsNumber[publication.id] = publication.comments.length;
+    _commentsPublication.sink.add(commentsNumber);
+  }
+
+  void toggleLabel(int id, String label) {
+    labels[id] = label;
+    labelsController.sink.add(labels);
+  }
 
   void changeImage(File? img) {
     _imageControlller.add(img);
@@ -82,6 +139,7 @@ class PublicationBloc extends BlocBase {
     }).toList();
 
     _publicationsController.add(lista);
+    print("PUBLICATION VALUE AQUI VTIROOOO: ${_publicationsController.value}");
   }
 
   Future<bool> submit() async {
@@ -96,7 +154,7 @@ class PublicationBloc extends BlocBase {
       print("USUARIO AQUI : ${userBloc.outUserValue.id}");
       request.fields['id_user'] = userBloc.outUserValue.id.toString();
       request.fields['legend'] = _legendController.valueOrNull ?? " ";
-      request.fields['project'] = null.toString();
+      request.fields['user'] = null.toString();
       request.fields['likes'] = [].toString();
       request.fields['comments'] = [].toString();
 

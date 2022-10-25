@@ -4,6 +4,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:semear/models/user_model.dart';
+import 'package:semear/pages/profile/following_screen.dart';
 import 'package:semear/widgets/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
 import 'package:semear/pages/profile/project/donations_projects_tab.dart';
@@ -12,9 +14,11 @@ import 'package:share/share.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class ProfileMissionaryPage extends StatefulWidget {
-  ProfileMissionaryPage({super.key, required this.user, this.controller});
+  ProfileMissionaryPage(
+      {super.key, required this.user, required this.type, this.controller});
 
-  String user;
+  String type;
+  User user;
   PageController? controller;
 
   @override
@@ -47,12 +51,13 @@ class _ProfileMissionaryPageState extends State<ProfileMissionaryPage>
       slivers: [
         SliverAppBar(
           leading: Visibility(
-            visible: widget.user == 'me' ? false : true,
+            visible: widget.type == 'me' ? false : true,
             child: IconButton(
               onPressed: () {
                 if (widget.controller != null) {
                   widget.controller!.jumpToPage(0);
                 }
+                Navigator.pop(context);
               },
               icon: Icon(Icons.arrow_back, color: Colors.black),
             ),
@@ -100,7 +105,10 @@ class _ProfileMissionaryPageState extends State<ProfileMissionaryPage>
                                           fontWeight: FontWeight.w700),
                                     ),
                                   ),
-                                  MenuSettings()
+                                  Visibility(
+                                    visible: widget.type == 'me' ? true : false,
+                                    child: MenuSettings(),
+                                  )
                                 ],
                               ),
                               Row(
@@ -164,7 +172,7 @@ class _ProfileMissionaryPageState extends State<ProfileMissionaryPage>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    widget.user == 'me'
+                    widget.type == 'me'
                         ? ButtonFilled(
                             onClick: () {},
                             text: 'Publicar',
@@ -179,7 +187,15 @@ class _ProfileMissionaryPageState extends State<ProfileMissionaryPage>
                     Padding(
                         padding: const EdgeInsets.all(15),
                         child: ButtonFilled(
-                          onClick: () {},
+                          onClick: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => FollowingScreen(
+                                          user: widget.user,
+                                          first: true,
+                                        )));
+                          },
                           text: 'Seguindo',
                         )),
                   ],

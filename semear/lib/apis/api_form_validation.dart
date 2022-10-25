@@ -37,6 +37,16 @@ class ApiForm {
     return a['check'];
   }
 
+  Future<String?> getBankName(code) async {
+    http.Response response = await http
+        .get(Uri.parse("https://brasilapi.com.br/api/banks/v1/$code"));
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body)['fullName'];
+    }
+    return null;
+  }
+
   Future<bool> checkUsername(username) async {
     http.Response response = await http.get(Uri.parse(
         "https://backend-semear.herokuapp.com/user/api/$username/checkUsername/"));

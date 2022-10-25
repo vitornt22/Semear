@@ -38,7 +38,7 @@ class _ButtonOutlinedProfileState extends State<ButtonOutlinedProfile> {
                 borderRadius: BorderRadius.circular(18)),
           ),
         ),
-        child: Row(children: [
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(Icons.add, color: Color(0xffa23673a)),
           SizedBox(width: 2),
           Text(

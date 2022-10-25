@@ -15,13 +15,24 @@ import 'package:semear/widgets/input_login_text.dart';
 import 'package:dropdown_plus/dropdown_plus.dart';
 import 'package:image_cropper/image_cropper.dart';
 
-class PublicationPage extends StatelessWidget with PublicationValidator {
+class PublicationPage extends StatefulWidget with PublicationValidator {
+  PublicationPage({super.key});
+
+  @override
+  State<PublicationPage> createState() => _PublicationPageState();
+}
+
+class _PublicationPageState extends State<PublicationPage> {
   ApiForm apiForm = ApiForm();
+
   final _formkey = GlobalKey<FormState>();
+
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final _imageController = BehaviorSubject<File?>();
+
   File? imagem;
+
   final PublicationBloc _pubBloc = BlocProvider.getBloc<PublicationBloc>();
 
   @override
@@ -39,18 +50,18 @@ class PublicationPage extends StatelessWidget with PublicationValidator {
         title: const Text('Publicar'),
         backgroundColor: Color(0xffa23673A),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.8,
-          decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(10)),
-          margin: EdgeInsets.all(20),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 30),
-            child: Form(
-              key: _formkey,
-              child: Stack(children: [
-                Column(
+      body: Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(10)),
+        margin: EdgeInsets.all(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 30),
+          child: Form(
+            key: _formkey,
+            child: Stack(children: [
+              SingleChildScrollView(
+                child: Column(
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -191,24 +202,24 @@ class PublicationPage extends StatelessWidget with PublicationValidator {
                     SizedBox(height: 20),
                   ],
                 ),
-                StreamBuilder<bool>(
-                    initialData: false,
-                    stream: _pubBloc.outLoading,
-                    builder: (context, snapshot) => Visibility(
-                        visible: snapshot.data!,
-                        child: Container(
-                          height: MediaQuery.of(context).size.height,
-                          width: MediaQuery.of(context).size.width,
-                          color: Colors.transparent,
-                          child: Center(
-                            heightFactor: 15,
-                            child: CircularProgressIndicator(
-                              color: Colors.green,
-                            ),
+              ),
+              StreamBuilder<bool>(
+                  initialData: false,
+                  stream: _pubBloc.outLoading,
+                  builder: (context, snapshot) => Visibility(
+                      visible: snapshot.data!,
+                      child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        width: MediaQuery.of(context).size.width,
+                        color: Colors.transparent,
+                        child: Center(
+                          heightFactor: 15,
+                          child: CircularProgressIndicator(
+                            color: Colors.green,
                           ),
-                        )))
-              ]),
-            ),
+                        ),
+                      )))
+            ]),
           ),
         ),
       ),
@@ -222,6 +233,7 @@ class PublicationPage extends StatelessWidget with PublicationValidator {
       bool success = await _pubBloc.submit();
       if (success == true) {
         ScaffoldMessenger.of(context).showSnackBar(snackBarSuccess);
+
         Navigator.of(context).pop();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(snackBarError);

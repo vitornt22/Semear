@@ -2,7 +2,7 @@
 
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
-import 'package:semear/blocs/homescreen_bloc.dart';
+import 'package:semear/blocs/publications_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/donor/donor_profile_page.dart';
@@ -24,7 +24,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Map<String, dynamic> pages;
   final PageController _pageController = PageController();
-  late HomeScreenBloc _homeScreenBloc;
   late AsyncSnapshot blocAsAsync;
   final userBloc = BlocProvider.getBloc<UserBloc>();
 
@@ -33,10 +32,15 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     pages = {
-      'church': ChurchProfilePage(user: 'me'),
-      'project': ProfileProjectPage(type: 'me'),
-      'missionary': ProfileMissionaryPage(user: 'me'),
-      'donor': DonorProfilePage(user: 'me'),
+      'church': ChurchProfilePage(
+          user: userBloc.outUserValue, first: true, type: 'me'),
+      'project': ProfileProjectPage(
+          categoryData: userBloc.outCategory,
+          user: userBloc.outUserValue,
+          type: 'me'),
+      'missionary':
+          ProfileMissionaryPage(user: userBloc.outUserValue, type: 'me'),
+      'donor': DonorProfilePage(type: 'me'),
     };
     print("TESTEEE: "); //${userBloc.outUser.category}");
   }
@@ -91,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         body: StreamBuilder<User>(
           stream: userBloc.outUser,
+          initialData: userBloc.outUserValue,
           builder: (context, snapshot) => PageView(
             physics: const NeverScrollableScrollPhysics(),
             controller: _pageController,
@@ -109,7 +114,9 @@ class _HomeScreenState extends State<HomeScreen> {
               snapshot.data != null &&
                       snapshot.data!.category != 'AnonymousDonor'
                   ? pages[snapshot.data!.category]
-                  : SizedBox()
+                  : Container(
+                      color: Colors.yellow,
+                    )
             ],
           ),
         ),

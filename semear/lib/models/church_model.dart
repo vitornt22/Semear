@@ -1,3 +1,5 @@
+import 'package:semear/models/follower_model.dart';
+import 'package:semear/models/information_model.dart';
 import 'package:semear/models/informations_model.dart';
 
 import 'user_model.dart';
@@ -8,6 +10,8 @@ class Church {
   Adress? adress;
   BankData? bankData;
   Pix? pix;
+  Information? information;
+  List<Follower>? following;
   String? cnpj;
   String? ministery;
   String? name;
@@ -18,6 +22,8 @@ class Church {
       this.adress,
       this.bankData,
       this.pix,
+      this.information,
+      this.following,
       this.cnpj,
       this.ministery,
       this.name});
@@ -29,6 +35,15 @@ class Church {
     bankData =
         json['bankData'] != null ? BankData.fromJson(json['bankData']) : null;
     pix = json['pix'] != null ? Pix.fromJson(json['pix']) : null;
+    information = json['information'] != null
+        ? Information.fromJson(json['information'])
+        : null;
+    if (json['following'] != null) {
+      following = <Follower>[];
+      json['following'].forEach((v) {
+        following!.add(Follower.fromJson(v));
+      });
+    }
     cnpj = json['cnpj'];
     ministery = json['ministery'];
     name = json['name'];
@@ -48,6 +63,12 @@ class Church {
     }
     if (pix != null) {
       data['pix'] = pix!.toJson();
+    }
+    if (information != null) {
+      data['information'] = information!.toJson();
+    }
+    if (following != null) {
+      data['following'] = following!.map((v) => v.toJson()).toList();
     }
     data['cnpj'] = cnpj;
     data['ministery'] = ministery;

@@ -1,10 +1,14 @@
 import 'package:semear/models/comment_model.dart';
 import 'package:semear/models/likes_models.dart';
+import 'package:semear/models/missionary_model..dart';
 import 'package:semear/models/project_model.dart';
+import 'package:semear/models/user_model.dart';
 
 class Publication {
   int? id;
+  User? user;
   Project? project;
+  Missionary? missionary;
   List<Like>? likes;
   List<Comment>? comments;
   int? idUser;
@@ -16,7 +20,9 @@ class Publication {
 
   Publication(
       {this.id,
+      this.user,
       this.project,
+      this.missionary,
       this.likes,
       this.comments,
       this.idUser,
@@ -28,8 +34,12 @@ class Publication {
 
   Publication.fromJson(Map<String, dynamic> json) {
     id = json['id'];
+    user = json['user'] != null ? User.fromJson(json['user']) : null;
     project =
         json['project'] != null ? Project.fromJson(json['project']) : null;
+    missionary = json['missionary'] != null
+        ? Missionary.fromJson(json['missionary'])
+        : null;
     if (json['likes'] != null) {
       likes = <Like>[];
       json['likes'].forEach((v) {
@@ -51,23 +61,29 @@ class Publication {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
-    data['id'] = this.id;
-    if (this.project != null) {
-      data['project'] = this.project!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    if (user != null) {
+      data['user'] = user!.toJson();
     }
-    if (this.likes != null) {
-      data['likes'] = this.likes!.map((v) => v.toJson()).toList();
+    if (project != null) {
+      data['project'] = project!.toJson();
     }
-    if (this.comments != null) {
-      data['comments'] = this.comments!.map((v) => v.toJson()).toList();
+    if (missionary != null) {
+      data['missionary'] = missionary!.toJson();
     }
-    data['id_user'] = this.idUser;
-    data['upload'] = this.upload;
-    data['legend'] = this.legend;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    data['is_accountability'] = this.isAccountability;
+    if (likes != null) {
+      data['likes'] = likes!.map((v) => v.toJson()).toList();
+    }
+    if (comments != null) {
+      data['comments'] = comments!.map((v) => v.toJson()).toList();
+    }
+    data['id_user'] = idUser;
+    data['upload'] = upload;
+    data['legend'] = legend;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    data['is_accountability'] = isAccountability;
     return data;
   }
 }

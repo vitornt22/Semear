@@ -1,22 +1,33 @@
+import 'package:semear/models/follower_model.dart';
 import 'package:semear/models/user_model.dart';
 
 class Donor {
   User? user;
   String? fullName;
+  List<Follower>? following;
 
-  Donor({this.user, this.fullName});
+  Donor({this.user, this.fullName, this.following});
 
   Donor.fromJson(Map<String, dynamic> json) {
-    user = json['user'] != null ? new User.fromJson(json['user']) : null;
+    user = json['user'] != null ? User.fromJson(json['user']) : null;
     fullName = json['fullName'];
+    if (json['following'] != null) {
+      following = <Follower>[];
+      json['following'].forEach((v) {
+        following!.add(Follower.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.user != null) {
-      data['user'] = this.user!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (user != null) {
+      data['user'] = user!.toJson();
     }
-    data['fullName'] = this.fullName;
+    data['fullName'] = fullName;
+    if (following != null) {
+      data['following'] = following!.map((v) => v.toJson()).toList();
+    }
     return data;
   }
 }

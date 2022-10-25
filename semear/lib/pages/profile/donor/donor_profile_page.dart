@@ -7,9 +7,9 @@ import 'package:semear/widgets/button_filled.dart';
 import 'package:semear/pages/profile/project/info_project_tab.dart';
 
 class DonorProfilePage extends StatefulWidget {
-  DonorProfilePage({super.key, required this.user, this.controller});
+  DonorProfilePage({super.key, required this.type, this.controller});
 
-  String user;
+  String type;
   PageController? controller;
 
   @override
@@ -34,12 +34,13 @@ class _DonorProfilePageState extends State<DonorProfilePage>
       slivers: [
         SliverAppBar(
           leading: Visibility(
-            visible: widget.user == 'me' ? false : true,
+            visible: widget.type == 'me' ? false : true,
             child: IconButton(
               onPressed: () {
                 if (widget.controller != null) {
                   widget.controller!.jumpToPage(0);
                 }
+                Navigator.pop(context);
               },
               icon: Icon(Icons.arrow_back, color: Colors.black),
             ),
@@ -87,7 +88,10 @@ class _DonorProfilePageState extends State<DonorProfilePage>
                                           fontWeight: FontWeight.w700),
                                     ),
                                   ),
-                                  MenuSettings()
+                                  Visibility(
+                                    visible: widget.type == 'me' ? true : false,
+                                    child: MenuSettings(),
+                                  )
                                 ],
                               ),
                               Row(

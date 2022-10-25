@@ -1,10 +1,12 @@
+import 'package:semear/models/information_model.dart';
+
 class User {
   int? id;
   String? username;
   String? email;
   String? category;
   bool? canPost;
-  String? password;
+  Information? information;
 
   User(
       {this.id,
@@ -12,7 +14,7 @@ class User {
       this.email,
       this.category,
       this.canPost,
-      this.password});
+      this.information});
 
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -20,17 +22,21 @@ class User {
     email = json['email'];
     category = json['category'];
     canPost = json['can_post'];
-    password = json['password'];
+    information = json['information'] != null
+        ? Information.fromJson(json['information'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
     data['username'] = username;
     data['email'] = email;
     data['category'] = category;
     data['can_post'] = canPost;
-    data['password'] = password;
+    if (information != null) {
+      data['information'] = information!.toJson();
+    }
     return data;
   }
 }

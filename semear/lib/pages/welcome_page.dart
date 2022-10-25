@@ -1,7 +1,5 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
-import 'package:rxdart/rxdart.dart';
-import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/pages/home_screen.dart';
 import 'package:semear/pages/initial_page.dart';
@@ -19,6 +17,7 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
+    print("WELCOME PAGEEE");
     userBloc.verificarToken().then((value) {
       if (value == true) {
         Navigator.pushAndRemoveUntil<dynamic>(

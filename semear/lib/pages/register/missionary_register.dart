@@ -64,7 +64,7 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
 
   Future<Missionary?>? submitData() async {
     print("ADRESS MAP: $adressMap");
-
+    print("CHURCHCONTROLLER: ${churchController.text}");
     print('CHURCH: $idChurch');
     http.Response response = await http.post(
       Uri.parse('https://backend-semear.herokuapp.com/missionary/api/'),
@@ -82,7 +82,8 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
           "id_adress": idAdress,
           "fullName": fullNameController.text,
           "church": null,
-          "adress": adressMap
+          "adress": adressMap,
+          "information": null
         },
       ),
     );
@@ -240,14 +241,18 @@ class _MissionaryRegisterState extends State<MissionaryRegister> {
                                     idAdress = value['adress']['id'];
                                     print('ADRESSS: $idAdress');
                                     idChurch = value['id'];
+                                    print("IDCHURCH: $idChurch");
                                   });
                                   submiDataFunction();
                                 });
                               } else {
+                                print(
+                                    "CHURCHCONTROLLER ${churchController.text}");
                                 apiForm
                                     .getChurch(churchController.text)
                                     .then((value) {
                                   setState(() {
+                                    idChurch = value['id'];
                                     idAdress = 0;
                                     adressMap = {
                                       "zip_code": zipCodeController.text,

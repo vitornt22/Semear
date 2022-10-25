@@ -1,8 +1,8 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, unused_field
 
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
-import 'package:semear/blocs/homescreen_bloc.dart';
-import 'package:semear/models/user_model.dart';
+import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/pages/timeline/notifications%20_page.dart';
 import 'package:semear/pages/profile/project/project_profile_page.dart';
 
@@ -12,6 +12,7 @@ import 'timeline.dart';
 class HomePage extends StatefulWidget {
   HomePage({super.key, required this.type});
   String type;
+  final userBloc = BlocProvider.getBloc<UserBloc>();
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -41,13 +42,9 @@ class _HomePageState extends State<HomePage> {
               _page = p;
             });
           },
-          children: <Widget>[
+          children: [
             TimeLine(controller: _pageController, type: 'me'),
             NotificationsPage(controller: _pageController),
-            ProfileProjectPage(
-              type: widget.type,
-              controller: _pageController,
-            )
           ],
         ),
       ),

@@ -57,6 +57,7 @@ class _FieldClassState extends State<FieldClass> {
       'digit': digit(),
       'church': church(),
       'username': username(),
+      'valueFloat': valueFloat(),
     };
 
     return map[widget.id];
@@ -134,6 +135,18 @@ class _FieldClassState extends State<FieldClass> {
       label: "Username",
       validator: validations.checkUsernameValidation,
       hintText: 'Ex: semear_',
+      sizeBoxHeigth: 10,
+    );
+  }
+
+  Widget valueFloat() {
+    return FormsField(
+      keyboard: TextInputType.number,
+      digit: true,
+      controller: widget.controller,
+      label: "Valor",
+      validator: validations.checkValueFloatValidation,
+      hintText: 'Ex: 1500,',
       sizeBoxHeigth: 10,
     );
   }

@@ -2,8 +2,19 @@
 
 import 'dart:convert';
 
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:semear/apis/api_profile.dart';
+import 'package:semear/blocs/profile_bloc.dart';
+import 'package:semear/models/church_model.dart';
+import 'package:semear/models/project_model.dart';
+import 'package:semear/models/user_model.dart';
+import 'package:semear/pages/profile/church/church_profile_page.dart';
+import 'package:semear/pages/profile/followers_screen.dart';
+import 'package:semear/pages/profile/following_screen.dart';
+import 'package:semear/pages/profile/publication_click_page.dart';
+import 'package:semear/pages/timeline/publication.dart';
 import 'package:semear/widgets/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
 import 'package:semear/pages/profile/project/donations_projects_tab.dart';
@@ -12,9 +23,16 @@ import 'package:share/share.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class ProfileProjectPage extends StatefulWidget {
-  ProfileProjectPage({super.key, required this.type, this.controller});
+  ProfileProjectPage(
+      {super.key,
+      required this.user,
+      required this.categoryData,
+      required this.type,
+      this.controller});
 
   String type;
+  User user;
+  var categoryData;
   PageController? controller;
 
   @override
@@ -24,7 +42,10 @@ class ProfileProjectPage extends StatefulWidget {
 class _ProfileProjectPageState extends State<ProfileProjectPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  ApiProfile api = ApiProfile();
   bool hasSite = true;
+  Church? myChurch;
+  final profileBloc = BlocProvider.getBloc<ProfileBloc>();
 
   @override
   void initState() {
@@ -33,16 +54,12 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
     _tabController.animateTo(0);
   }
 
-  _getGifs() async {
-    http.Response response;
-    response = await http.get(Uri.parse(
-        'https://api.giphy.com/v1/gifs/trending?api_key=mTjlHb8OsXPjnxkEZ283j3mQ0QIKvtgG&limit=20&rating=g'));
-
-    return json.decode(response.body);
-  }
-
   @override
   Widget build(BuildContext context) {
+    myChurch = widget.categoryData.church;
+
+    print("MYCHURCH: $myChurch");
+
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -53,6 +70,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                 if (widget.controller != null) {
                   widget.controller!.jumpToPage(0);
                 }
+                Navigator.pop(context);
               },
               icon: Icon(Icons.arrow_back, color: Colors.black),
             ),
@@ -60,7 +78,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
           backgroundColor: Colors.white,
           centerTitle: true,
           title: Text(
-            'JesusVisitandoFamilias123',
+            widget.user.username!,
             style: TextStyle(color: Color(0xffa23673A)),
           ),
         ),
@@ -76,11 +94,11 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(right: 20, left: 10, top: 10),
                         child: CircleAvatar(
-                          backgroundImage:
-                              AssetImage('assets/images/amigos.jpeg'),
+                          backgroundImage: NetworkImage(
+                              widget.user.information!.photoProfile!),
                           radius: 60,
                         ),
                       ),
@@ -94,20 +112,24 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      "Amigos do Bem",
+                                      widget.categoryData.name,
                                       style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w700),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                  MenuSettings()
+                                  Visibility(
+                                      visible:
+                                          widget.type == 'me' ? true : false,
+                                      child: MenuSettings())
                                 ],
                               ),
                               Row(
-                                children: const [
+                                children: [
                                   Expanded(
                                     child: Text(
-                                      "Projeto missionario e social com intuito de ajudar familias carentes residentes em periferias",
+                                      widget.user.information!.resume!,
                                       style: TextStyle(fontSize: 15),
                                     ),
                                   ),
@@ -119,24 +141,55 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 8.0),
-                                    child: Text('www.amigosdobem.com.br'),
+                                    child: Text(
+                                        widget.user.information!.site ?? ''),
                                   )),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
-                                children: const [
-                                  Text(
-                                    "Picos-Pi",
-                                    style: TextStyle(fontSize: 15),
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {},
+                                    child: Text(
+                                      widget.type == 'me'
+                                          ? '${widget.categoryData.adress.city}-${widget.categoryData.adress.uf}'
+                                          : '',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ),
                                   SizedBox(
                                     width: 30,
                                   ),
-                                  Text(
-                                    "Assembleia de Deus",
-                                    style: TextStyle(fontSize: 15),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => Scaffold(
+                                            body: ChurchProfilePage(
+                                              user: myChurch!.user!,
+                                              type: 'other',
+                                              first: true,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Minha Igreja',
+                                      maxLines: 2,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ),
-                                  SizedBox(
-                                    width: 30,
+                                  Expanded(
+                                    child: SizedBox(
+                                      width: 30,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -162,7 +215,14 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                   children: [
                     widget.type == 'me'
                         ? ButtonFilled(
-                            onClick: () {},
+                            onClick: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Scaffold(
+                                            body: PublicationPage(),
+                                          )));
+                            },
                             text: 'Publicar',
                           )
                         : ButtonFilled(
@@ -170,12 +230,30 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                             onClick: () {},
                           ),
                     Expanded(
-                      child: ButtonFilled(text: 'Admiradores', onClick: () {}),
+                      child: ButtonFilled(
+                          text: 'Seguidores',
+                          onClick: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => FollowersScreen(
+                                          user: widget.user,
+                                          first: true,
+                                        )));
+                          }),
                     ),
                     Padding(
                         padding: const EdgeInsets.all(15),
                         child: ButtonFilled(
-                          onClick: () {},
+                          onClick: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => FollowingScreen(
+                                          user: widget.user,
+                                          first: true,
+                                        )));
+                          },
                           text: 'Seguindo',
                         )),
                   ],
@@ -227,25 +305,19 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
           child: TabBarView(
             controller: _tabController,
             children: [
-              FutureBuilder(
-                future: _getGifs(),
+              StreamBuilder<Map<int, List<dynamic>>>(
+                stream: profileBloc.outPublications,
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasData) {
-                      return _createGifTable(context, snapshot);
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Text("${snapshot.error}: ERROO"),
-                      );
+                  if (snapshot.hasData) {
+                    if (snapshot.data![widget.user.id] != null) {
+                      return createPublicationTable(
+                          context, snapshot.data![widget.user.id]);
                     }
                   }
-                  return Container(
-                    width: 200.0,
-                    height: 200.0,
-                    alignment: Alignment.center,
-                    child: const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 5.0,
+                  getPublications();
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.green,
                     ),
                   );
                 },
@@ -259,30 +331,50 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
     );
   }
 
-  Widget _createGifTable(BuildContext context, AsyncSnapshot snapshot) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(10.0),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10.0,
-        mainAxisSpacing: 10,
+  Widget createPublicationTable(BuildContext context, snapshot) {
+    return Container(
+      color: Colors.white,
+      child: GridView.builder(
+        padding: const EdgeInsets.all(10.0),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10.0,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: snapshot.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+              child: FadeInImage.memoryNetwork(
+                placeholder: kTransparentImage,
+                image: snapshot[index].upload,
+                height: 300.0,
+                fit: BoxFit.cover,
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      appBar: AppBar(
+                        backgroundColor: Colors.green,
+                      ),
+                      body: PublicationClickPage(publication: snapshot[index]),
+                    ),
+                  ),
+                );
+              },
+              onLongPress: () {
+                //Share.share(snapshot.data["data"][index]["images"]["fixed_height"]
+                //["url"]);
+              });
+        },
       ),
-      itemCount: 20,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-            child: FadeInImage.memoryNetwork(
-              placeholder: kTransparentImage,
-              image: snapshot.data["data"][index]["images"]["fixed_height"]
-                  ["url"],
-              height: 300.0,
-              fit: BoxFit.cover,
-            ),
-            onTap: () {},
-            onLongPress: () {
-              Share.share(snapshot.data["data"][index]["images"]["fixed_height"]
-                  ["url"]);
-            });
-      },
     );
+  }
+
+  void getPublications() async {
+    api.getPublications(widget.user.id).then((value) {
+      profileBloc.addPublications(widget.user.id, value);
+    });
   }
 }

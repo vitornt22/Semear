@@ -102,10 +102,10 @@ class _TimeLineState extends State<TimeLine> {
                         itemBuilder: (context, index) {
                           print("ENTROUI VITOR");
                           return PostContainer(
-                              index: index,
-                              publication: snapshot.data![index],
-                              type: widget.type,
-                              controller: widget.controller);
+                            index: index,
+                            publication: snapshot.data![index],
+                            type: widget.type,
+                          );
                         },
                       );
                     } else {

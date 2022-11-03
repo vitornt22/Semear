@@ -4,9 +4,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:semear/models/information_model.dart';
+import 'package:semear/models/missionary_model..dart';
 import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/following_screen.dart';
-import 'package:semear/widgets/settings_menu.dart';
+import 'package:semear/pages/profile/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
 import 'package:semear/pages/profile/project/donations_projects_tab.dart';
 import 'package:semear/pages/profile/project/info_project_tab.dart';
@@ -107,7 +109,10 @@ class _ProfileMissionaryPageState extends State<ProfileMissionaryPage>
                                   ),
                                   Visibility(
                                     visible: widget.type == 'me' ? true : false,
-                                    child: MenuSettings(),
+                                    child: MenuSettings(
+                                      categoryData: Missionary(),
+                                      user: User(),
+                                    ),
                                   )
                                 ],
                               ),
@@ -189,12 +194,14 @@ class _ProfileMissionaryPageState extends State<ProfileMissionaryPage>
                         child: ButtonFilled(
                           onClick: () {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => FollowingScreen(
-                                          user: widget.user,
-                                          first: true,
-                                        )));
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FollowingScreen(
+                                  user: widget.user,
+                                  first: true,
+                                ),
+                              ),
+                            );
                           },
                           text: 'Seguindo',
                         )),
@@ -270,8 +277,16 @@ class _ProfileMissionaryPageState extends State<ProfileMissionaryPage>
                   );
                 },
               ),
-              DonationsProject(),
-              InfoProject(category: 'missionary'),
+              DonationsProject(
+                  type: widget.type,
+                  categoryData: widget.user,
+                  user: widget.user),
+              InfoProject(
+                type: widget.type,
+                user: User(),
+                category: 'missionary',
+                information: Information(),
+              ),
             ],
           ),
         ),

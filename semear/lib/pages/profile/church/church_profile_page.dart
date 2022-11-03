@@ -1,11 +1,12 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
+import 'package:semear/models/church_model.dart';
 import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/church/church_list_validation_tab.dart';
 import 'package:semear/pages/profile/following_screen.dart';
 import 'package:semear/widgets/button_outlined_profile.dart';
-import 'package:semear/widgets/settings_menu.dart';
+import 'package:semear/pages/profile/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
 
 import 'missionary_tab.dart';
@@ -50,7 +51,11 @@ class _ChurchProfilePageState extends State<ChurchProfilePage>
           backgroundColor: Colors.white,
           centerTitle: true,
           actions: [
-            MenuSettings(color: Colors.black),
+            MenuSettings(
+              color: Colors.black,
+              user: widget.user,
+              categoryData: Church(),
+            ),
             SizedBox(
               width: 15,
             )

@@ -1,8 +1,11 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
 import 'package:flutter/material.dart';
+import 'package:semear/models/donor_model.dart';
+import 'package:semear/models/information_model.dart';
+import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/donor/donor_donations_tab.dart';
-import 'package:semear/widgets/settings_menu.dart';
+import 'package:semear/pages/profile/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
 import 'package:semear/pages/profile/project/info_project_tab.dart';
 
@@ -90,7 +93,10 @@ class _DonorProfilePageState extends State<DonorProfilePage>
                                   ),
                                   Visibility(
                                     visible: widget.type == 'me' ? true : false,
-                                    child: MenuSettings(),
+                                    child: MenuSettings(
+                                      categoryData: Donor(),
+                                      user: User(),
+                                    ),
                                   )
                                 ],
                               ),
@@ -178,7 +184,12 @@ class _DonorProfilePageState extends State<DonorProfilePage>
             controller: _tabController,
             children: [
               DonationsDonor(),
-              InfoProject(category: 'missionary'),
+              InfoProject(
+                type: widget.type,
+                user: User(),
+                category: 'missionary',
+                information: Information(),
+              ),
             ],
           ),
         ),

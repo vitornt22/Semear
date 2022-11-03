@@ -236,6 +236,7 @@ class _DonationDialogState extends State<DonationDialog> {
         ),
         StreamBuilder<bool>(
           stream: donationBloc.outAnonymousController,
+          initialData: false,
           builder: (context, snapshot) => CheckboxListTile(
             activeColor: Colors.green,
             title: const Text("Doar de forma Anônima"),

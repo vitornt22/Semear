@@ -37,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'project': ProfileProjectPage(
           categoryData: userBloc.outCategory,
           user: userBloc.outUserValue,
+          back: true,
           type: 'me'),
       'missionary':
           ProfileMissionaryPage(user: userBloc.outUserValue, type: 'me'),

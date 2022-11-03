@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:semear/apis/api_publication.dart';
 import 'package:semear/blocs/publications_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
-import 'package:semear/models/comment_model.dart';
 import 'package:semear/models/publication_model.dart';
 import 'package:semear/pages/profile/church/church_profile_page.dart';
 import 'package:semear/pages/profile/donor/donor_profile_page.dart';
@@ -15,12 +14,9 @@ import 'package:path/path.dart';
 
 class Comments extends StatefulWidget {
   Comments(
-      {super.key,
-      required this.focus,
-      required this.index,
-      required this.publication});
+      {super.key, required this.focus, this.index, required this.publication});
   bool focus;
-  int index;
+  int? index;
   Publication publication;
 
   @override
@@ -145,11 +141,10 @@ class _CommentsState extends State<Comments> {
                                                     .id;
                                                 print(
                                                     'ID DO COMENTARIO: ${snapshot.data![widget.publication.id][index].id}');
-                                                if (await api.deleteComment(
-                                                        id,
-                                                        widget
-                                                            .publication.id) !=
-                                                    null) {
+                                                final value =
+                                                    await api.deleteComment(id,
+                                                        widget.publication.id);
+                                                if (value != null) {
                                                   updateComments();
                                                   ScaffoldMessenger.of(context)
                                                       .showSnackBar(
@@ -193,7 +188,9 @@ class _CommentsState extends State<Comments> {
   void updateComments() async {
     final lista = await api.updatePublication(widget.publication.id);
     print("LISRAAAA: $lista");
-    pubBloc.changeListPublication(widget.index, lista);
+    if (widget.index != null) {
+      pubBloc.changeListPublication(widget.index!, lista);
+    }
     pubBloc.changeCommentsList(lista!.id, lista.comments);
     pubBloc.toogleNumberComments(lista);
     print("VALOR DE A TESTE: ${pubBloc.outComments}");

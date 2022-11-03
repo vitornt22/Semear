@@ -413,17 +413,17 @@ class _FollowersScreenState extends State<FollowersScreen> {
     Map<String, dynamic> map = {
       'project': ProfileProjectPage(
         categoryData: Project.fromJson(userdata),
-        type: 'other',
+        type: user.id == userBloc.outUserValue.id ? 'me' : 'other',
         user: user,
       ),
       'missionary': ProfileMissionaryPage(
-        type: 'other',
+        type: user.id == userBloc.outUserValue.id ? 'me' : 'other',
         user: user,
       ),
       'church': ChurchProfilePage(
         first: true,
         user: user,
-        type: 'other',
+        type: user.id == userBloc.outUserValue.id ? 'me' : 'other',
       )
     };
     return map[category];

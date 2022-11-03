@@ -86,6 +86,7 @@ class UserBloc extends BlocBase with LoginValidators {
 
   Future<bool> verificarToken() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    //sharedPreferences.clear();
     if (sharedPreferences.getString('map') != null) {
       final decodedMap = json.decode(sharedPreferences.getString('map')!);
       _userController.add(User.fromJson(decodedMap['user']));

@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors
 
 import 'dart:io';
 
@@ -10,10 +10,8 @@ import 'package:semear/blocs/publication_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/pages/timeline/Image_source_sheet.dart';
 import 'package:semear/validators/publication_validation.dart';
-import 'package:semear/widgets/input_login_text.dart';
 
 import 'package:dropdown_plus/dropdown_plus.dart';
-import 'package:image_cropper/image_cropper.dart';
 
 class PublicationPage extends StatefulWidget with PublicationValidator {
   PublicationPage({super.key});
@@ -34,11 +32,6 @@ class _PublicationPageState extends State<PublicationPage> {
   File? imagem;
 
   final PublicationBloc _pubBloc = BlocProvider.getBloc<PublicationBloc>();
-
-  @override
-  void dispose() {
-    _imageController.close();
-  }
 
   @override
   Widget build(BuildContext context) {

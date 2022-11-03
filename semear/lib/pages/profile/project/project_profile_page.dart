@@ -1,37 +1,38 @@
 // ignore_for_file: use_full_hex_values_for_flutter_colors, prefer_const_constructors, must_be_immutable
 
-import 'dart:convert';
-
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:semear/apis/api_profile.dart';
+import 'package:semear/apis/api_settings.dart';
 import 'package:semear/blocs/profile_bloc.dart';
+import 'package:semear/blocs/settings_bloc.dart';
+import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/church_model.dart';
-import 'package:semear/models/project_model.dart';
 import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/church/church_profile_page.dart';
 import 'package:semear/pages/profile/followers_screen.dart';
 import 'package:semear/pages/profile/following_screen.dart';
 import 'package:semear/pages/profile/publication_click_page.dart';
 import 'package:semear/pages/timeline/publication.dart';
-import 'package:semear/widgets/settings_menu.dart';
+import 'package:semear/pages/profile/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
 import 'package:semear/pages/profile/project/donations_projects_tab.dart';
 import 'package:semear/pages/profile/project/info_project_tab.dart';
-import 'package:share/share.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class ProfileProjectPage extends StatefulWidget {
   ProfileProjectPage(
       {super.key,
       required this.user,
+      this.back,
       required this.categoryData,
       required this.type,
       this.controller});
 
   String type;
   User user;
+  bool? back;
   var categoryData;
   PageController? controller;
 
@@ -43,8 +44,11 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
   ApiProfile api = ApiProfile();
+  ApiSettings settings = ApiSettings();
   bool hasSite = true;
   Church? myChurch;
+  final userBloc = BlocProvider.getBloc<UserBloc>();
+  final settingsBloc = BlocProvider.getBloc<SettingBloc>();
   final profileBloc = BlocProvider.getBloc<ProfileBloc>();
 
   @override
@@ -64,7 +68,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
       slivers: [
         SliverAppBar(
           leading: Visibility(
-            visible: widget.type == 'me' ? false : true,
+            visible: widget.back != true,
             child: IconButton(
               onPressed: () {
                 if (widget.controller != null) {
@@ -122,7 +126,10 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                                   Visibility(
                                       visible:
                                           widget.type == 'me' ? true : false,
-                                      child: MenuSettings())
+                                      child: MenuSettings(
+                                        user: widget.user,
+                                        categoryData: widget.categoryData,
+                                      ))
                                 ],
                               ),
                               Row(
@@ -150,9 +157,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                                   GestureDetector(
                                     onTap: () {},
                                     child: Text(
-                                      widget.type == 'me'
-                                          ? '${widget.categoryData.adress.city}-${widget.categoryData.adress.uf}'
-                                          : '',
+                                      '${widget.categoryData.adress.city}-${widget.categoryData.adress.uf}',
                                       style: TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
@@ -214,48 +219,46 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     widget.type == 'me'
-                        ? ButtonFilled(
-                            onClick: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => Scaffold(
-                                            body: PublicationPage(),
-                                          )));
-                            },
-                            text: 'Publicar',
+                        ? Expanded(
+                            child: ButtonFilled(
+                              onClick: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Scaffold(
+                                              body: PublicationPage(),
+                                            )));
+                              },
+                              text: 'Publicar',
+                            ),
                           )
-                        : ButtonFilled(
-                            text: 'Seguir',
-                            onClick: () {},
-                          ),
+                        : getButton(context),
+                    ButtonFilled(
+                        text: 'Seguidores',
+                        onClick: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => FollowersScreen(
+                                        user: widget.user,
+                                        first: true,
+                                      )));
+                        }),
                     Expanded(
                       child: ButtonFilled(
-                          text: 'Seguidores',
-                          onClick: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => FollowersScreen(
-                                          user: widget.user,
-                                          first: true,
-                                        )));
-                          }),
+                        onClick: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => FollowingScreen(
+                                        user: widget.user,
+                                        first: true,
+                                      )));
+                        },
+                        text: 'Seguindo',
+                      ),
                     ),
-                    Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: ButtonFilled(
-                          onClick: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => FollowingScreen(
-                                          user: widget.user,
-                                          first: true,
-                                        )));
-                          },
-                          text: 'Seguindo',
-                        )),
+                    SizedBox()
                   ],
                 ),
                 Divider(),
@@ -322,13 +325,122 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                   );
                 },
               ),
-              DonationsProject(),
-              InfoProject(category: 'project'),
+              DonationsProject(
+                  type: widget.type,
+                  categoryData: widget.categoryData,
+                  user: widget.user),
+              InfoProject(
+                  type: widget.type,
+                  user: widget.categoryData,
+                  category: 'project',
+                  information: widget.user.information!),
             ],
           ),
         ),
       ],
     );
+  }
+
+  Widget getButton(context) {
+    return StreamBuilder<Map<int, bool>>(
+      stream: settingsBloc.outFollowerController,
+      initialData: settingsBloc.outFollowerValue,
+      builder: (context, snapshot) {
+        getLabel();
+        if (snapshot.data![widget.user.id] != null) {
+          return Padding(
+              padding: const EdgeInsets.all(15),
+              child: snapshot.data![widget.user.id] == true
+                  ? ButtonFilled(
+                      loading: true,
+                      onClick: unFolllowerClick,
+                      text: 'sigo',
+                    )
+                  : ButtonFilled(
+                      loading: true,
+                      changeColor: true,
+                      onClick: setFollowerClick,
+                      text: 'Seguir',
+                    ));
+        }
+        return SizedBox(
+          height: 15,
+          width: 15,
+          child: CircularProgressIndicator(color: Colors.green),
+        );
+      },
+    );
+  }
+
+  void setFollowerClick() async {
+    print("FOLLOWING");
+    settingsBloc.inLoading.add(true);
+    final scaffold = ScaffoldMessenger.of(context);
+    final value =
+        await settings.setFollower(userBloc.outUserValue.id, widget.user.id);
+    if (value != null) {
+      userBloc.updateUser(value);
+      settingsBloc.changeFollower(widget.user.id, true);
+      scaffold.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Você comecou a seguir ${widget.user.username}',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      scaffold.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Erro ao tentar seguir ${widget.user.username} ',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+    settingsBloc.inLoading.add(false);
+  }
+
+  void unFolllowerClick() async {
+    settingsBloc.inLoading.add(true);
+
+    final scaffold = ScaffoldMessenger.of(context);
+    print("UNFOLLOWING");
+    final value =
+        await settings.unFollow(userBloc.outUserValue.id, widget.user.id);
+    if (value != null) {
+      userBloc.updateUser(value);
+      settingsBloc.changeFollower(widget.user.id, false);
+      scaffold.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Você deixou de seguir  ${widget.user.username} ',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      scaffold.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Erro ao tentar deixar de seguir ${widget.user.username} ',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+    settingsBloc.inLoading.add(false);
+  }
+
+  void getLabel() {
+    settings
+        .getLabelFollower(userBloc.outUserValue.id, widget.user.id)
+        .then((value) => settingsBloc.changeFollower(widget.user.id, value));
   }
 
   Widget createPublicationTable(BuildContext context, snapshot) {
@@ -346,7 +458,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
           return GestureDetector(
               child: FadeInImage.memoryNetwork(
                 placeholder: kTransparentImage,
-                image: snapshot[index].upload,
+                image: snapshot[index].upload ?? CircleAvatar(),
                 height: 300.0,
                 fit: BoxFit.cover,
               ),
@@ -354,12 +466,8 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Scaffold(
-                      appBar: AppBar(
-                        backgroundColor: Colors.green,
-                      ),
-                      body: PublicationClickPage(publication: snapshot[index]),
-                    ),
+                    builder: (context) => PublicationClickPage(
+                        type: widget.type, publication: snapshot[index]),
                   ),
                 );
               },

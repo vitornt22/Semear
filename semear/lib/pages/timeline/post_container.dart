@@ -14,18 +14,17 @@ import 'package:semear/widgets/button_filled.dart';
 
 // ignore: must_be_immutable
 class PostContainer extends StatefulWidget {
-  PostContainer(
-      {super.key,
-      required this.publication,
-      required this.index,
-      required this.type,
-      required this.controller});
+  PostContainer({
+    super.key,
+    required this.publication,
+    required this.index,
+    required this.type,
+  });
 
   String type;
 
-  int index;
+  int? index;
   Publication publication;
-  PageController controller;
   @override
   State<PostContainer> createState() => _PostContainerState();
 }
@@ -206,9 +205,7 @@ class _PostContainerState extends State<PostContainer> {
                                       pubBloc.inDisabled.add(false);
 
                                       pubBloc.changeListPublication(
-                                          widget.index, value);
-                                      print(
-                                          "NEW LIKES: ${snapshot.data![widget.index].likes}");
+                                          widget.index!, value);
                                     }
                                     pubBloc.inDisabled.add(false);
                                   },
@@ -312,7 +309,6 @@ class _PostContainerState extends State<PostContainer> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      final user = 'vitor agora';
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -334,7 +330,10 @@ class _PostContainerState extends State<PostContainer> {
                               body: ProfileProjectPage(
                                   categoryData: widget.publication.project,
                                   user: widget.publication.user!,
-                                  type: 'other'),
+                                  type: widget.publication.user!.id ==
+                                          userBloc.outUserValue.id
+                                      ? 'me'
+                                      : 'other'),
                             ),
                           ),
                         ),

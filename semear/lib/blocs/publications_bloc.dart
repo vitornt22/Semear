@@ -84,11 +84,14 @@ class PublicationsBloc extends BlocBase {
   Sink get inLoadingComment => loadingComment.sink;
 
   void changeListPublication(index, publication) {
-    listPublication[index] = publication;
-    _publicationsListController.add(listPublication);
+    if (index != null) {
+      listPublication[index] = publication;
+      _publicationsListController.add(listPublication);
+    }
   }
 
   void changeCommentsList(id, c) {
+    c = c ?? [];
     commentMap[id] = c;
     comments.add(commentMap);
   }

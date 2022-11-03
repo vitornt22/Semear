@@ -7,12 +7,15 @@ class SettingBloc extends BlocBase {
 
   final followerController = BehaviorSubject<Map<int, bool>>();
   final saveController = BehaviorSubject<Map<int, bool>>();
+  final loadingController = BehaviorSubject<bool>.seeded(false);
 
   Sink get inFollowerController => followerController.sink;
   Sink get inSaveController => saveController.sink;
+  Sink get inLoading => loadingController.sink;
 
   Stream<Map<int, bool>> get outFollowerController => followerController.stream;
   Map<int, bool>? get outFollowerValue => followerController.valueOrNull;
+  bool? get outLoading => loadingController.valueOrNull;
 
   Stream<Map<int, bool>> get outSavedController => saveController.stream;
   Map<int, bool>? get outSavedValue => saveController.valueOrNull;
@@ -21,6 +24,7 @@ class SettingBloc extends BlocBase {
   void dispose() {
     followerController.close();
     saveController.close();
+    loadingController.close();
     super.dispose();
   }
 

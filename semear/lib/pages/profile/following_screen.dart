@@ -302,6 +302,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
       width: 100,
       child: StreamBuilder<Map<int, bool>>(
         stream: followerBloc.outDisabledButtons,
+        initialData: followerBloc.outDisabledButtonsValue,
         builder: (context, snapshot) => OutlinedButton(
           style: ButtonStyle(
             foregroundColor: MaterialStateProperty.all(Colors.green),

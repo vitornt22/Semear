@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:semear/models/donation_model.dart';
 import 'package:semear/widgets/card_transaction.dart';
 
 class DonationsDonor extends StatelessWidget {
@@ -13,9 +14,12 @@ class DonationsDonor extends StatelessWidget {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 3),
-                  child: CardTransaction(),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: CardTransaction(
+                    origin: 'donorProfile',
+                    donation: Donation(),
+                  ),
                 );
               },
               // 40 list items

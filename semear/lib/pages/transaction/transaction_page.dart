@@ -1,6 +1,7 @@
 // ignore_for_file: unnecessary_const, use_full_hex_values_for_flutter_colors
 
 import 'package:flutter/material.dart';
+import 'package:semear/models/donation_model.dart';
 import 'package:semear/widgets/card_transaction.dart';
 import 'package:semear/widgets/card_transaction_count.dart';
 
@@ -54,7 +55,10 @@ class TransactionPage extends StatelessWidget {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                return const CardTransaction();
+                return CardTransaction(
+                  origin: 'transactionPage',
+                  donation: Donation(),
+                );
               },
               childCount: 100, // 1000 list items
             ),

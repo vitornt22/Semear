@@ -65,7 +65,7 @@ class ApiPublication {
   }
 
   Future<Publication?> deleteComment(id, publication) async {
-    http.Response response = await http.delete(
+    http.Response response = await http.get(
         Uri.parse(
             "https://backend-semear.herokuapp.com/comment/api/$id/deleteComment/$publication/"),
         headers: {"Content-Type": "application/json"});

@@ -54,6 +54,7 @@ class FollowersBloc extends BlocBase {
       numberFollowersController.valueOrNull;
   Map<int, int>? get outNumberFollowingValue =>
       numberFollowingController.valueOrNull;
+  Map<int, bool>? get outDisabledButtonsValue => disableButton.valueOrNull;
 
   void addDisable(id, value) {
     listDisabledButton[id] = value;

@@ -279,7 +279,7 @@ class DonationsProject extends StatelessWidget {
         context: context,
         barrierDismissible: true,
         builder: (context) => DonationDialog(
-            user: categoryData, donor: userBloc.outUserValue.id));
+            user: user, donor: userBloc.outUserValue![user.id]!.id));
   }
 
   void getDonations() async {

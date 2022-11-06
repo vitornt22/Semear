@@ -27,6 +27,7 @@ class _CommentsState extends State<Comments> {
   final userBloc = BlocProvider.getBloc<UserBloc>();
   final pubBloc = BlocProvider.getBloc<PublicationsBloc>();
   ApiPublication api = ApiPublication();
+  int? myId;
 
   TextEditingController addComennt = TextEditingController();
   double heigth = 80;
@@ -34,6 +35,7 @@ class _CommentsState extends State<Comments> {
   @override
   void initState() {
     super.initState();
+    myId = userBloc.outMyIdValue;
     pubBloc.changeCommentsList(
         widget.publication.id, widget.publication.comments);
     //pubBloc.getCommentsPublication(widget.publication.id);
@@ -132,7 +134,7 @@ class _CommentsState extends State<Comments> {
                                                       [index]
                                                   .user
                                                   .id ==
-                                              userBloc.outUserValue.id
+                                              userBloc.outUserValue![myId]!.id
                                           ? IconButton(
                                               onPressed: () async {
                                                 final id = snapshot
@@ -198,13 +200,12 @@ class _CommentsState extends State<Comments> {
 
   void onTap(category, context) {
     print("CATEGORY $category");
+
     final mapCategory = {
       'church': ChurchProfilePage(
           first: false, type: 'other', user: widget.publication.user!),
-      'project': ProfileProjectPage(
-          categoryData: widget.publication.project,
-          type: 'other',
-          user: widget.publication.user!),
+      'project':
+          ProfileProjectPage(type: 'other', user: widget.publication.user!),
       'missionary': ProfileMissionaryPage(
         user: widget.publication.user!,
         type: 'other',
@@ -275,7 +276,7 @@ class _CommentsState extends State<Comments> {
                                 pubBloc.inLoadingComment.add(true);
                                 final publication = await api.submitCommment(
                                     addComennt.text,
-                                    userBloc.outUserValue.id,
+                                    userBloc.outUserValue![myId]!.id,
                                     widget.publication.id);
                                 if (publication != null) {
                                   pubBloc.changeCommentsList(

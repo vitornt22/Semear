@@ -9,17 +9,23 @@ class ProfileBloc extends BlocBase {
   Map<int, List<dynamic>> listValidations = {};
   Map<int, List<dynamic>> listDonations = {};
   Map<int, List<dynamic>> listSenderDonation = {};
+  Map<int, List<dynamic>> listSavedPublication = {};
 
   final publicationsController = BehaviorSubject<Map<int, List<dynamic>>>();
   final validationsController = BehaviorSubject<Map<int, List<dynamic>>>();
   final donationsController = BehaviorSubject<Map<int, List<dynamic>>>();
   final loadingController = BehaviorSubject<Map<int, bool>>();
   final senderDonationsController = BehaviorSubject<Map<int, List<dynamic>>>();
+  final savedPublicationsController =
+      BehaviorSubject<Map<int, List<dynamic>>>();
+
   final gettingLoad = BehaviorSubject<bool>.seeded(false);
 
   //Streams
   Stream<Map<int, List<dynamic>>> get outPublications =>
       publicationsController.stream;
+  Stream<Map<int, List<dynamic>>> get outSavedPublications =>
+      savedPublicationsController.stream;
   Stream<Map<int, List<dynamic>>> get outValidations =>
       validationsController.stream;
   Stream<Map<int, List<dynamic>>> get outDonations =>
@@ -32,6 +38,8 @@ class ProfileBloc extends BlocBase {
   //Values
   Map<int, List<dynamic>>? get outDonationsValue =>
       donationsController.valueOrNull;
+  Map<int, List<dynamic>>? get outSavedPublicationValue =>
+      savedPublicationsController.valueOrNull;
   Map<int, List<dynamic>>? get outSenderDonationsValue =>
       senderDonationsController.valueOrNull;
   Map<int, List<dynamic>>? get outValidationsValue =>
@@ -40,6 +48,12 @@ class ProfileBloc extends BlocBase {
   bool? get outGettingLoadValue => gettingLoad.valueOrNull;
 
   Sink get inGettingLoading => gettingLoad.sink;
+
+  void addPublicationSaved(id, list) {
+    list = list ?? [];
+    listSavedPublication[id] = list;
+    savedPublicationsController.add(listSavedPublication);
+  }
 
   void addPublications(id, list) {
     list = list ?? [];

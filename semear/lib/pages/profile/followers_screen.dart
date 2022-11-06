@@ -11,6 +11,7 @@ import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/project_model.dart';
 import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/church/church_profile_page.dart';
+import 'package:semear/pages/profile/donor/donor_profile_page.dart';
 import 'package:semear/pages/profile/missionary/missionary_profile_page.dart';
 import 'package:semear/pages/profile/project/project_profile_page.dart';
 import 'package:semear/widgets/button_filled.dart';
@@ -34,11 +35,13 @@ class _FollowersScreenState extends State<FollowersScreen> {
   final settings = ApiSettings();
   final userBloc = BlocProvider.getBloc<UserBloc>();
   final settingBloc = BlocProvider.getBloc<SettingBloc>();
+  int? myId;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    myId = userBloc.outMyIdValue;
   }
 
   @override
@@ -154,9 +157,10 @@ class _FollowersScreenState extends State<FollowersScreen> {
                           initializer();
                         }
                         if (snapshot.hasData) {
-                          if (snapshot.data![widget.user.id] != null) {
+                          if (snapshot.data![widget.user.id!] != null ||
+                              snapshot.data![widget.user.id]!.isNotEmpty) {
                             return listFollowers(
-                                snapshot.data![widget.user.id]);
+                                snapshot.data![widget.user.id!]);
                           } else {
                             return const Padding(
                               padding: EdgeInsets.symmetric(vertical: 20),
@@ -199,101 +203,108 @@ class _FollowersScreenState extends State<FollowersScreen> {
   }
 
   Widget listFollowers(data) {
-    return ListView.separated(
-        separatorBuilder: (context, index) => const Divider(thickness: 1),
-        itemCount: data.length,
-        itemBuilder: (context, index) {
-          print("INDEC NUMBER: ${data[index].user.id}");
+    return data != null || data.isNotEmpty
+        ? ListView.separated(
+            separatorBuilder: (context, index) => const Divider(thickness: 1),
+            itemCount: data.length,
+            itemBuilder: (context, index) {
+              print("INDEC NUMBER: ${data[index]!.user!.id!}");
 
-          return ListTile(
-            title: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => Scaffold(
-                          bottomSheet: Container(
-                            color: Colors.white,
-                            width: double.infinity,
-                            height: 80,
-                            child: ButtonFilled(
-                              text: widget.first == true
-                                  ? 'Voltar ao meu perfil'
-                                  : "Voltar aos comentários",
-                              onClick: () {
-                                print("WIDGET.FIRST, ${widget.first}");
-                                widget.first == false
-                                    ? Navigator.of(context).popUntil((route) =>
-                                        route.settings.arguments == true)
-                                    : Navigator.of(context).popUntil(
-                                        (route) => route.isFirst == true);
-                              },
-                            ),
-                          ),
-                          body: nextPage(
-                            data[index].user.category,
-                            data[index].user,
-                            data[index].userData,
-                          ))),
-                );
-              },
-              child: Text(
-                data[index].user.username,
-                style: const TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.w600),
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(
-                  height: 4,
-                ),
-                Text(
-                  category(data[index].user.category)!,
-                  style: const TextStyle(
-                      color: Colors.green, fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.start,
-                )
-              ],
-            ),
-            leading: ClipOval(
-              child: Image.asset(
-                'assets/images/amigos.jpeg',
-                alignment: Alignment.bottomLeft,
-              ),
-            ),
-            trailing: Visibility(
-              visible: visibility(data[index]),
-              child: StreamBuilder<Map<int, Map<int, bool>>>(
-                  stream: followerBloc.labelController,
-                  initialData: followerBloc.outLabelValue,
-                  builder: (context, snapshot) {
-                    followerBloc.addLabelButton(
-                        userBloc.outUserValue.id, data[index].user.id);
-                    if (snapshot.hasData) {
-                      if (snapshot.data![userBloc.outUserValue.id]![
-                              data[index].user.id] !=
-                          null) {
-                        final check = snapshot.data![userBloc.outUserValue.id]![
-                            data[index].user.id];
-                        if (check == true) {
-                          return unFollow(data[index].user);
-                        } else {
-                          return follow(data[index].user);
-                        }
-                      }
-                    }
-
-                    return const SizedBox(
-                      height: 15,
-                      width: 15,
-                      child: CircularProgressIndicator(color: Colors.green),
+              return ListTile(
+                title: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Scaffold(
+                              bottomSheet: Container(
+                                color: Colors.white,
+                                width: double.infinity,
+                                height: 80,
+                                child: ButtonFilled(
+                                  text: widget.first == true
+                                      ? 'Voltar ao meu perfil'
+                                      : "Voltar aos comentários",
+                                  onClick: () {
+                                    print("WIDGET.FIRST, ${widget.first}");
+                                    widget.first == false
+                                        ? Navigator.of(context).popUntil(
+                                            (route) =>
+                                                route.settings.arguments ==
+                                                true)
+                                        : Navigator.of(context).popUntil(
+                                            (route) => route.isFirst == true);
+                                  },
+                                ),
+                              ),
+                              body: nextPage(
+                                data[index]!.user!.category!,
+                                data[index]!.user!,
+                                data[index]!.userData!,
+                              ))),
                     );
-                  }),
-            ),
+                  },
+                  child: Text(
+                    data[index].user!.username,
+                    style: const TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(
+                      height: 4,
+                    ),
+                    Text(
+                      category(data[index].user.category)!,
+                      style: const TextStyle(
+                          color: Colors.green, fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.start,
+                    )
+                  ],
+                ),
+                leading: ClipOval(
+                  child: Image.asset(
+                    'assets/images/amigos.jpeg',
+                    alignment: Alignment.bottomLeft,
+                  ),
+                ),
+                trailing: Visibility(
+                  visible: visibility(data[index]),
+                  child: StreamBuilder<Map<int, Map<int, bool>>>(
+                      stream: followerBloc.labelController,
+                      initialData: followerBloc.outLabelValue,
+                      builder: (context, snapshot) {
+                        followerBloc.addLabelButton(
+                            userBloc.outUserValue![myId]!.id,
+                            data[index].user.id);
+                        if (snapshot.hasData) {
+                          if (snapshot.data![userBloc.outUserValue![myId]!.id]![
+                                  data[index].user.id] !=
+                              null) {
+                            final check = snapshot.data![userBloc
+                                .outUserValue![myId]!.id]![data[index].user.id];
+                            if (check == true) {
+                              return unFollow(data[index].user);
+                            } else {
+                              return follow(data[index].user);
+                            }
+                          }
+                        }
+
+                        return const SizedBox(
+                          height: 15,
+                          width: 15,
+                          child: CircularProgressIndicator(color: Colors.green),
+                        );
+                      }),
+                ),
+              );
+            })
+        : Center(
+            child: CircularProgressIndicator(color: Colors.green),
           );
-        });
   }
 
   Widget follow(data) {
@@ -311,9 +322,9 @@ class _FollowersScreenState extends State<FollowersScreen> {
               : () async {
                   followerBloc.addDisable(data.id, true);
                   final value = await settings.setFollower(
-                      userBloc.outUserValue.id, data.id);
+                      userBloc.outUserValue![myId]!.id, data.id);
                   if (value != null) {
-                    userBloc.updateUser(value);
+                    userBloc.addUser(value);
                     settingBloc.changeFollower(data.id, true);
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(
@@ -335,7 +346,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
   }
 
   bool visibility(data) {
-    return userBloc.outUserValue.id != data.user.id &&
+    return userBloc.outUserValue![myId]!.id != data.user.id &&
         (data.user.category == 'project' || data.user.category == 'missionary');
   }
 
@@ -370,11 +381,11 @@ class _FollowersScreenState extends State<FollowersScreen> {
                         child: const Text('Sim'),
                         onPressed: () async {
                           print("UNFOLLOWING");
-                          final value = await settings.unFollow(
-                              userBloc.outUserValue.id, data.id);
+                          final value = await settings.unFollow(myId, data.id);
                           if (value != null) {
-                            userBloc.updateUser(value);
+                            userBloc.addUser(value);
                             settingBloc.changeFollower(data.id, false);
+                            initializer();
                           } else {
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(snackBarErrorFollow);
@@ -395,6 +406,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
 
   void initializer() {
     api.getFollowers(widget.user.id).then((value) {
+      print("Followers $value");
       followerBloc.addFollowers(widget.user.id, value);
     });
   }
@@ -410,23 +422,52 @@ class _FollowersScreenState extends State<FollowersScreen> {
   }
 
   nextPage(category, user, userdata) {
-    Map<String, dynamic> map = {
-      'project': ProfileProjectPage(
-        categoryData: Project.fromJson(userdata),
-        type: user.id == userBloc.outUserValue.id ? 'me' : 'other',
-        user: user,
-      ),
-      'missionary': ProfileMissionaryPage(
-        type: user.id == userBloc.outUserValue.id ? 'me' : 'other',
-        user: user,
-      ),
-      'church': ChurchProfilePage(
-        first: true,
-        user: user,
-        type: user.id == userBloc.outUserValue.id ? 'me' : 'other',
-      )
-    };
-    return map[category];
+    print("ENTROU NEXTPAGE0");
+    var categoryData = null;
+    late final object;
+
+    switch (category) {
+      case 'project':
+        categoryData = Project.fromJson(userdata);
+        object = ProfileProjectPage(
+          type: widget.user.id == userBloc.outUserValue![myId]!.id
+              ? 'me'
+              : 'other',
+          user: widget.user,
+        );
+        break;
+      case 'missionary':
+        object = ProfileMissionaryPage(
+          type: widget.user.id == userBloc.outUserValue![myId]!.id
+              ? 'me'
+              : 'other',
+          user: widget.user,
+        );
+        break;
+      case 'donor':
+        object = DonorProfilePage(
+            type: user.id == userBloc.outUserValue![myId]!.id ? 'me' : 'other');
+        break;
+      case 'church':
+        object = ChurchProfilePage(
+          first: true,
+          user: user,
+          type: user.id == userBloc.outUserValue![myId]!.id ? 'me' : 'other',
+        );
+        break;
+      default:
+        break;
+    }
+
+    final value = object;
+    addCategoryDataAndUser(user.id, categoryData, user);
+    print("valueNexPAge ${value}");
+    return value;
+  }
+
+  void addCategoryDataAndUser(id, data, user) {
+    userBloc.addCategory(id, data);
+    userBloc.addUser(user);
   }
 
   final snackBarErrorFollow = const SnackBar(

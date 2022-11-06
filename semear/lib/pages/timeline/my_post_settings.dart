@@ -18,10 +18,12 @@ class _MyPostSettingsState extends State<MyPostSettings> {
   final settingBloc = SettingBloc();
   final userBloc = BlocProvider.getBloc<UserBloc>();
   final api = ApiSettings();
+  int? myId;
 
   @override
   void initState() {
     super.initState();
+    myId = userBloc.outMyIdValue;
   }
 
   @override
@@ -34,7 +36,7 @@ class _MyPostSettingsState extends State<MyPostSettings> {
       onTap: () async {
         print("FOLLOWING");
         final value = await api.setFollower(
-            userBloc.outUserValue.id, widget.publication.user!.id);
+            userBloc.outUserValue![myId]!.id, widget.publication.user!.id);
         if (value != null) {
           userBloc.updateUser(value);
           settingBloc.changeFollower(widget.publication.id, false);

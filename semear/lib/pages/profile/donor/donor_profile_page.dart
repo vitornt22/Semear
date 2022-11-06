@@ -186,6 +186,7 @@ class _DonorProfilePageState extends State<DonorProfilePage>
               DonationsDonor(),
               InfoProject(
                 type: widget.type,
+                categoryData: Donor(),
                 user: User(),
                 category: 'missionary',
                 information: Information(),

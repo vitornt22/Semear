@@ -151,8 +151,9 @@ class PublicationBloc extends BlocBase {
       var request = http.MultipartRequest('POST',
           Uri.parse("https://backend-semear.herokuapp.com/publication/api/"));
 
-      print("USUARIO AQUI : ${userBloc.outUserValue.id}");
-      request.fields['id_user'] = userBloc.outUserValue.id.toString();
+      print("USUARIO AQUI : ${userBloc.outUserValue![userBloc.outMyId]!.id}");
+      request.fields['id_user'] =
+          userBloc.outUserValue![userBloc.outMyId]!.id.toString();
       request.fields['legend'] = _legendController.valueOrNull ?? " ";
       request.fields['user'] = null.toString();
       request.fields['likes'] = [].toString();

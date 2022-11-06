@@ -33,6 +33,7 @@ class _PostContainerState extends State<PostContainer> {
   final pubBloc = BlocProvider.getBloc<PublicationsBloc>();
   final userBloc = BlocProvider.getBloc<UserBloc>();
   ApiPublication api = ApiPublication();
+  int? myId;
 
   @override
   void dispose() {
@@ -50,7 +51,9 @@ class _PostContainerState extends State<PostContainer> {
     print("MUDANÇAS : ${widget.publication.likes!.length}");
     pubBloc.toggleNumberLikes(widget.publication);
     pubBloc.toogleNumberComments(widget.publication);
-    // widget.publication.likes!.any((element) => element.user== userBloc.outUserValue.id)? pubBloc.toggleLabel(widget.publication.id!,  label)
+    myId = userBloc.outMyIdValue;
+    print("MYID $myId");
+    // widget.publication.likes!.any((element) => element.user== userBloc.outUserValue![myId]!.id)? pubBloc.toggleLabel(widget.publication.id!,  label)
   }
 
   @override
@@ -61,7 +64,7 @@ class _PostContainerState extends State<PostContainer> {
       pubBloc.toggleNumberLikes(value);
       pubBloc.toogleNumberComments(widget.publication);
       api
-          .getLabel(userBloc.outUserValue.id, widget.publication.id)
+          .getLabel(userBloc.outUserValue![myId]!.id, widget.publication.id)
           .then((value) => pubBloc.toggleLabel(widget.publication.id!, value));
     });
     return Container(
@@ -178,21 +181,22 @@ class _PostContainerState extends State<PostContainer> {
                                     pubBloc.inDisabled.add(true);
                                     final value;
                                     String label = await api.getLabel(
-                                        userBloc.outUserValue.id,
+                                        userBloc.outUserValue![myId]!.id,
                                         widget.publication.id);
                                     pubBloc.toggleLabel(
-                                        userBloc.outUserValue.id!, label);
+                                        userBloc.outUserValue![myId]!.id!,
+                                        label);
                                     //If current user are inside list of like followers
                                     if (label == "Curtir") {
                                       value = await api.setLike(
-                                          userBloc.outUserValue.id,
+                                          userBloc.outUserValue![myId]!.id,
                                           widget.publication.id);
 
                                       label = 'Descurtir';
                                     } else {
                                       print("ENTROU EM TRUE");
                                       value = await api.deleteLike(
-                                          userBloc.outUserValue.id,
+                                          userBloc.outUserValue![myId]!.id,
                                           widget.publication.id);
                                       label = 'Curtir';
                                     }
@@ -291,7 +295,8 @@ class _PostContainerState extends State<PostContainer> {
             child: CircleAvatar(
               maxRadius: 30,
               child: Image.network(
-                widget.publication.user!.information!.photoProfile!,
+                widget.publication.user!.information!.photoProfile ??
+                    'https://cdn-icons-png.flaticon.com/512/149/149071.png',
                 fit: BoxFit.fill,
               ),
             ),
@@ -309,32 +314,36 @@ class _PostContainerState extends State<PostContainer> {
                 children: [
                   GestureDetector(
                     onTap: () {
+                      addCategoryAndUser(
+                          widget.publication.user!.id,
+                          widget.publication.user!.category == 'project'
+                              ? widget.publication.project
+                              : widget.publication.missionary,
+                          widget.publication.user);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           settings: RouteSettings(),
                           builder: (context) => Scaffold(
                             body: Scaffold(
-                              bottomSheet: Container(
-                                color: Colors.white,
-                                width: double.infinity,
-                                height: 80,
-                                child: ButtonFilled(
-                                  text: "Voltar ao  inicio",
-                                  onClick: () {
-                                    Navigator.of(context).popUntil(
-                                        (route) => route.isFirst == true);
-                                  },
+                                bottomSheet: Container(
+                                  color: Colors.white,
+                                  width: double.infinity,
+                                  height: 80,
+                                  child: ButtonFilled(
+                                    text: "Voltar ao  inicio",
+                                    onClick: () {
+                                      Navigator.of(context).popUntil(
+                                          (route) => route.isFirst == true);
+                                    },
+                                  ),
                                 ),
-                              ),
-                              body: ProfileProjectPage(
-                                  categoryData: widget.publication.project,
-                                  user: widget.publication.user!,
-                                  type: widget.publication.user!.id ==
-                                          userBloc.outUserValue.id
-                                      ? 'me'
-                                      : 'other'),
-                            ),
+                                body: ProfileProjectPage(
+                                    user: widget.publication.user!,
+                                    type: widget.publication.user!.id ==
+                                            userBloc.outUserValue![myId]!.id
+                                        ? 'me'
+                                        : 'other')),
                           ),
                         ),
                       );
@@ -376,10 +385,16 @@ class _PostContainerState extends State<PostContainer> {
         ),
         Padding(
             padding: EdgeInsets.symmetric(horizontal: 10),
-            child: widget.publication.user!.id == userBloc.outUserValue.id
-                ? MyPostSettings(publication: widget.publication)
-                : PostSettings(publication: widget.publication)),
+            child:
+                widget.publication.user!.id == userBloc.outUserValue![myId]!.id
+                    ? MyPostSettings(publication: widget.publication)
+                    : PostSettings(publication: widget.publication)),
       ],
     );
+  }
+
+  addCategoryAndUser(id, data, user) {
+    userBloc.addCategory(id, data);
+    userBloc.addUser(user);
   }
 }

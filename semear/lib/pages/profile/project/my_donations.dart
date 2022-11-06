@@ -1,6 +1,9 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:semear/apis/api_profile.dart';
 import 'package:semear/blocs/profile_bloc.dart';
+import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/user_model.dart';
 import 'package:semear/widgets/card_transaction.dart';
 
@@ -18,6 +21,9 @@ class _MyDonationsState extends State<MyDonations>
     with TickerProviderStateMixin {
   late TabController _tabController;
   final profileBloc = BlocProvider.getBloc<ProfileBloc>();
+  final userBloc = BlocProvider.getBloc<UserBloc>();
+  late int? idUser = userBloc.outMyIdValue;
+  ApiProfile api = ApiProfile();
 
   @override
   void initState() {
@@ -31,6 +37,18 @@ class _MyDonationsState extends State<MyDonations>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              onPressed: () {
+                getDonations();
+              },
+              tooltip: 'Atualizar',
+              icon: const Icon(Icons.update),
+            ),
+          )
+        ],
         centerTitle: true,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -75,7 +93,6 @@ class _MyDonationsState extends State<MyDonations>
             ? profileBloc.outDonationsValue
             : profileBloc.outSenderDonationsValue,
         builder: (context, snapshot) {
-          widget.getDonations();
           if (snapshot.hasData && snapshot.data![widget.user.id] != null) {
             return snapshot.data![widget.user.id]!.isEmpty
                 ? text(category)
@@ -105,5 +122,14 @@ class _MyDonationsState extends State<MyDonations>
         style: TextStyle(color: Colors.green),
       ),
     );
+  }
+
+  void getDonations() async {
+    api.getDonations(idUser, 'receive').then((value) {
+      profileBloc.addDonations(idUser, value);
+    });
+    api.getDonations(idUser, 'sender').then((value) {
+      profileBloc.addSenderDonations(idUser, value);
+    });
   }
 }

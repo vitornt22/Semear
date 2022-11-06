@@ -282,6 +282,7 @@ class _ProfileMissionaryPageState extends State<ProfileMissionaryPage>
                   categoryData: widget.user,
                   user: widget.user),
               InfoProject(
+                categoryData: Missionary(),
                 type: widget.type,
                 user: User(),
                 category: 'missionary',

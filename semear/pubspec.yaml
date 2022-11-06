@@ -109,6 +109,7 @@ flutter:
   assets:
     - assets/images/projeto2.jpeg
     - assets/images/folder.png
+    - assets/images/avatar.png
     - assets/images/alert.png
     - assets/images/igreja.jpg
     - assets/images/iconSemear.png

@@ -11,6 +11,7 @@ import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/follower_model.dart';
 import 'package:semear/models/project_model.dart';
 import 'package:semear/models/user_model.dart';
+import 'package:semear/pages/profile/donor/donor_profile_page.dart';
 import 'package:semear/pages/profile/missionary/missionary_profile_page.dart';
 import 'package:semear/pages/profile/project/project_profile_page.dart';
 import 'package:semear/widgets/button_filled.dart';
@@ -34,11 +35,13 @@ class _FollowingScreenState extends State<FollowingScreen> {
   final settings = ApiSettings();
   final userBloc = BlocProvider.getBloc<UserBloc>();
   final settingBloc = BlocProvider.getBloc<SettingBloc>();
+  int? myId;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    myId = userBloc.outMyIdValue;
   }
 
   @override
@@ -270,13 +273,13 @@ class _FollowingScreenState extends State<FollowingScreen> {
                   initialData: followerBloc.outLabelValue,
                   builder: (context, snapshot) {
                     followerBloc.addLabelButton(
-                        userBloc.outUserValue.id, data[index].user2.id);
+                        userBloc.outUserValue![myId]!.id, data[index].user2.id);
                     if (snapshot.hasData) {
-                      if (snapshot.data![userBloc.outUserValue.id]![
+                      if (snapshot.data![userBloc.outUserValue![myId]!.id]![
                               data[index].user2.id] !=
                           null) {
-                        final check = snapshot.data![userBloc.outUserValue.id]![
-                            data[index].user2.id];
+                        final check = snapshot.data![userBloc
+                            .outUserValue![myId]!.id]![data[index].user2.id];
                         if (check == true) {
                           return unFollow(data[index].user2);
                         } else {
@@ -312,9 +315,9 @@ class _FollowingScreenState extends State<FollowingScreen> {
               : () async {
                   followerBloc.addDisable(data.id, true);
                   final value = await settings.setFollower(
-                      userBloc.outUserValue.id, data.id);
+                      userBloc.outUserValue![myId]!.id, data.id);
                   if (value != null) {
-                    userBloc.updateUser(value);
+                    userBloc.addUser(value);
                     settingBloc.changeFollower(data.id, true);
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(
@@ -336,7 +339,7 @@ class _FollowingScreenState extends State<FollowingScreen> {
   }
 
   bool visibility(data) {
-    return userBloc.outUserValue.id != data.user2.id &&
+    return userBloc.outUserValue![myId]!.id != data.user2.id &&
         (data.user2.category == 'project' ||
             data.user2.category == 'missionary');
   }
@@ -373,9 +376,9 @@ class _FollowingScreenState extends State<FollowingScreen> {
                         onPressed: () async {
                           print("UNFOLLOWING");
                           final value = await settings.unFollow(
-                              userBloc.outUserValue.id, data.id);
+                              userBloc.outUserValue![myId]!.id, data.id);
                           if (value != null) {
-                            userBloc.updateUser(value);
+                            userBloc.addUser(value);
                             settingBloc.changeFollower(data.id, false);
                           } else {
                             ScaffoldMessenger.of(context)
@@ -412,18 +415,38 @@ class _FollowingScreenState extends State<FollowingScreen> {
   }
 
   nextPage(category, user, userdata) {
-    Map<String, dynamic> map = {
-      'project': ProfileProjectPage(
-        categoryData: Project.fromJson(userdata),
-        type: 'other',
-        user: user,
-      ),
-      'missionary': ProfileMissionaryPage(
-        type: 'other',
-        user: user,
-      ),
-    };
-    return map[category];
+    print("ENTROU NEXTPAGE0");
+    var categoryData = null;
+    late final object;
+    print(myId);
+
+    switch (category) {
+      case 'project':
+        categoryData = Project.fromJson(userdata);
+        object = ProfileProjectPage(
+          type: user.id == myId ? 'me' : 'other',
+          user: user,
+        );
+        break;
+      case 'missionary':
+        object = ProfileMissionaryPage(
+          type: user.id == userBloc.outUserValue![myId]!.id ? 'me' : 'other',
+          user: user,
+        );
+        break;
+      default:
+        break;
+    }
+
+    final value = object;
+    addCategoryDataAndUser(user.id, categoryData, user);
+    print("valueNexPAge ${value}");
+    return value;
+  }
+
+  void addCategoryDataAndUser(id, data, user) {
+    userBloc.addCategory(id, data);
+    userBloc.addUser(user);
   }
 
   final snackBarErrorFollow = const SnackBar(

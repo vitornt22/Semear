@@ -88,7 +88,7 @@ class CardTransaction extends StatelessWidget {
     switch (origin) {
       case 'transactionPage':
         return Text(
-            'Doação de R\$ ${donation.value} para ${donation.user!.username} ');
+            'Doação de R\$ ${donation.value} para ${donation.user!.username!} ');
       case 'profile':
         return Text(
             'Doação de R\$ ${donation.value} feita por ${donation.donor!.username} ');

@@ -26,7 +26,6 @@ class ProfileProjectPage extends StatefulWidget {
       {super.key,
       required this.user,
       this.back,
-      required this.categoryData,
       required this.type,
       this.controller});
 
@@ -46,6 +45,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
   ApiProfile api = ApiProfile();
   ApiSettings settings = ApiSettings();
   bool hasSite = true;
+  int? idUser;
   Church? myChurch;
   final userBloc = BlocProvider.getBloc<UserBloc>();
   final settingsBloc = BlocProvider.getBloc<SettingBloc>();
@@ -56,11 +56,12 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.animateTo(0);
+    idUser = widget.user.id;
   }
 
   @override
   Widget build(BuildContext context) {
-    myChurch = widget.categoryData.church;
+    myChurch = userBloc.outCategoryValue![idUser].church;
 
     print("MYCHURCH: $myChurch");
 
@@ -81,9 +82,13 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
           ),
           backgroundColor: Colors.white,
           centerTitle: true,
-          title: Text(
-            widget.user.username!,
-            style: TextStyle(color: Color(0xffa23673A)),
+          title: StreamBuilder<Map<int, User?>>(
+            stream: userBloc.outUser,
+            initialData: userBloc.outUserValue,
+            builder: (context, snapshot) => Text(
+              snapshot.data![idUser]!.username ?? '',
+              style: TextStyle(color: Color(0xffa23673A)),
+            ),
           ),
         ),
         SliverToBoxAdapter(
@@ -100,11 +105,20 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                     children: [
                       Padding(
                         padding: EdgeInsets.only(right: 20, left: 10, top: 10),
-                        child: CircleAvatar(
-                          backgroundImage: NetworkImage(
-                              widget.user.information!.photoProfile!),
-                          radius: 60,
-                        ),
+                        child: StreamBuilder<Map<int, User?>>(
+                            stream: userBloc.outUser,
+                            initialData: userBloc.outUserValue,
+                            builder: (context, snapshot) {
+                              return CircleAvatar(
+                                backgroundColor: Colors.green,
+                                backgroundImage: NetworkImage(
+                                  snapshot.data![idUser]!.information!
+                                          .photoProfile ??
+                                      'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                                ),
+                                radius: 60,
+                              );
+                            }),
                       ),
                       Expanded(
                         child: Padding(
@@ -115,13 +129,18 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Text(
-                                      widget.categoryData.name,
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
+                                    child: StreamBuilder<Map<int, dynamic>>(
+                                        stream: userBloc.outCategory,
+                                        initialData: userBloc.outCategoryValue,
+                                        builder: (context, snapshot) {
+                                          return Text(
+                                            snapshot.data![idUser].name,
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          );
+                                        }),
                                   ),
                                   Visibility(
                                       visible:
@@ -135,10 +154,17 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Text(
-                                      widget.user.information!.resume!,
-                                      style: TextStyle(fontSize: 15),
-                                    ),
+                                    child: StreamBuilder<Map<int, User?>>(
+                                        stream: userBloc.outUser,
+                                        initialData: userBloc.outUserValue,
+                                        builder: (context, snapshot) {
+                                          return Text(
+                                            snapshot.data![idUser]!.information!
+                                                    .resume ??
+                                                ' ',
+                                            style: TextStyle(fontSize: 15),
+                                          );
+                                        }),
                                   ),
                                   SizedBox(width: 30)
                                 ],
@@ -148,19 +174,31 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 8.0),
-                                    child: Text(
-                                        widget.user.information!.site ?? ''),
+                                    child: StreamBuilder<Map<int, User?>>(
+                                        stream: userBloc.outUser,
+                                        initialData: userBloc.outUserValue,
+                                        builder: (context, snapshot) {
+                                          return Text(snapshot.data![idUser]!
+                                                  .information!.site ??
+                                              '');
+                                        }),
                                   )),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   GestureDetector(
-                                    onTap: () {},
-                                    child: Text(
-                                      '${widget.categoryData.adress.city}-${widget.categoryData.adress.uf}',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
+                                    onTap: () {
+                                      //Add location option click
+                                    },
+                                    child: StreamBuilder<Map<int, dynamic>>(
+                                      stream: userBloc.outCategory,
+                                      initialData: userBloc.outCategoryValue,
+                                      builder: (context, snapshot) => Text(
+                                        '${snapshot.data![idUser].adress.city}-${snapshot.data![idUser].adress.uf}',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -223,11 +261,13 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                             child: ButtonFilled(
                               onClick: () {
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => Scaffold(
-                                              body: PublicationPage(),
-                                            )));
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Scaffold(
+                                      body: PublicationPage(),
+                                    ),
+                                  ),
+                                );
                               },
                               text: 'Publicar',
                             ),
@@ -312,9 +352,9 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                 stream: profileBloc.outPublications,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    if (snapshot.data![widget.user.id] != null) {
+                    if (snapshot.data![idUser] != null) {
                       return createPublicationTable(
-                          context, snapshot.data![widget.user.id]);
+                          context, snapshot.data![idUser]);
                     }
                   }
                   getPublications();
@@ -331,7 +371,8 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
                   user: widget.user),
               InfoProject(
                   type: widget.type,
-                  user: widget.categoryData,
+                  user: widget.user,
+                  categoryData: widget.categoryData,
                   category: 'project',
                   information: widget.user.information!),
             ],
@@ -347,10 +388,10 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
       initialData: settingsBloc.outFollowerValue,
       builder: (context, snapshot) {
         getLabel();
-        if (snapshot.data![widget.user.id] != null) {
+        if (snapshot.hasData && snapshot.data![idUser] != null) {
           return Padding(
               padding: const EdgeInsets.all(15),
-              child: snapshot.data![widget.user.id] == true
+              child: snapshot.data![idUser] == true
                   ? ButtonFilled(
                       loading: true,
                       onClick: unFolllowerClick,
@@ -376,15 +417,14 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
     print("FOLLOWING");
     settingsBloc.inLoading.add(true);
     final scaffold = ScaffoldMessenger.of(context);
-    final value =
-        await settings.setFollower(userBloc.outUserValue.id, widget.user.id);
+    final value = await settings.setFollower(userBloc.outMyIdValue, idUser);
     if (value != null) {
       userBloc.updateUser(value);
-      settingsBloc.changeFollower(widget.user.id, true);
+      settingsBloc.changeFollower(idUser, true);
       scaffold.showSnackBar(
         SnackBar(
           content: Text(
-            'Você comecou a seguir ${widget.user.username}',
+            'Você comecou a seguir ${userBloc.outUserValue![idUser]!.username!}',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Colors.green,
@@ -409,15 +449,14 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
 
     final scaffold = ScaffoldMessenger.of(context);
     print("UNFOLLOWING");
-    final value =
-        await settings.unFollow(userBloc.outUserValue.id, widget.user.id);
+    final value = await settings.unFollow(userBloc.outMyIdValue, idUser);
     if (value != null) {
       userBloc.updateUser(value);
-      settingsBloc.changeFollower(widget.user.id, false);
+      settingsBloc.changeFollower(idUser, false);
       scaffold.showSnackBar(
         SnackBar(
           content: Text(
-            'Você deixou de seguir  ${widget.user.username} ',
+            'Você deixou de seguir  ${userBloc.outUserValue![idUser]!.username} ',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Colors.green,
@@ -427,7 +466,7 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
       scaffold.showSnackBar(
         SnackBar(
           content: Text(
-            'Erro ao tentar deixar de seguir ${widget.user.username} ',
+            'Erro ao tentar deixar de seguir ${userBloc.outUserValue![idUser]!.username} ',
             textAlign: TextAlign.center,
           ),
           backgroundColor: Colors.redAccent,
@@ -439,8 +478,8 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
 
   void getLabel() {
     settings
-        .getLabelFollower(userBloc.outUserValue.id, widget.user.id)
-        .then((value) => settingsBloc.changeFollower(widget.user.id, value));
+        .getLabelFollower(userBloc.outMyIdValue, idUser)
+        .then((value) => settingsBloc.changeFollower(idUser, value));
   }
 
   Widget createPublicationTable(BuildContext context, snapshot) {
@@ -481,8 +520,8 @@ class _ProfileProjectPageState extends State<ProfileProjectPage>
   }
 
   void getPublications() async {
-    api.getPublications(widget.user.id).then((value) {
-      profileBloc.addPublications(widget.user.id, value);
+    api.getPublications(idUser).then((value) {
+      profileBloc.addPublications(idUser, value);
     });
   }
 }

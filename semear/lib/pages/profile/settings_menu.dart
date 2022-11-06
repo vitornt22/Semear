@@ -5,7 +5,7 @@ import 'package:semear/models/saved_publication.dart';
 import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/edit_account.dart';
 import 'package:semear/pages/profile/edit_profile.dart';
-import 'package:semear/pages/saved_publications.dart';
+import 'package:semear/pages/profile/saved_publications.dart';
 
 class MenuSettings extends StatelessWidget {
   MenuSettings(
@@ -17,28 +17,19 @@ class MenuSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton(
-      icon: Icon(
-        Icons.more_vert,
-        color: color ?? Colors.grey,
-      ),
-      itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-        PopupMenuItem(
-          child: GestureDetector(
-            onTap: () {
-              next(
-                  context,
-                  EditProfile(
-                    categoryData: categoryData,
-                    user: user,
-                  ));
-            },
-            child: const ListTile(
-              leading: Icon(Icons.mode_edit_sharp),
-              title: Text('Editar Perfil'),
-            ),
-          ),
+    final perfil = PopupMenuItem(
+      child: GestureDetector(
+        onTap: () {
+          next(context, EditProfile());
+        },
+        child: const ListTile(
+          leading: Icon(Icons.mode_edit_sharp),
+          title: Text('Editar Perfil'),
         ),
+      ),
+    );
+    getList() {
+      final list = <PopupMenuEntry>[
         PopupMenuItem(
           child: GestureDetector(
             onTap: () {
@@ -77,8 +68,24 @@ class MenuSettings extends StatelessWidget {
             title: Text('Sair'),
           ),
         ),
-      ],
-    );
+      ];
+
+      if (NotisDonor()) {
+        list.insert(0, perfil);
+      }
+      return list;
+    }
+
+    return PopupMenuButton(
+        icon: Icon(
+          Icons.more_vert,
+          color: color ?? Colors.grey,
+        ),
+        itemBuilder: (BuildContext context) => getList());
+  }
+
+  bool NotisDonor() {
+    return user.category != 'donor';
   }
 
   void next(context, obj) {

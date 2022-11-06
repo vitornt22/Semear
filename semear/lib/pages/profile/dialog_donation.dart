@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:semear/apis/api_form_validation.dart';
 import 'package:semear/blocs/donation_bloc.dart';
+import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/pages/register/formsFields/fields_class.dart';
 import 'package:semear/validators/fields_validations.dart';
 import 'package:semear/widgets/button_filled.dart';
@@ -27,6 +29,7 @@ class _DonationDialogState extends State<DonationDialog> {
   static List<String> keyTypes = <String>['PIX', 'Transferência Bancária'];
   GlobalKey<FormState> keyForm = GlobalKey<FormState>();
   final donationBloc = DonationBloc();
+  final userBloc = BlocProvider.getBloc<UserBloc>();
   @override
   void initState() {
     // TODO: implement initState
@@ -35,7 +38,7 @@ class _DonationDialogState extends State<DonationDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final church = widget.user.church;
+    final church = userBloc.outCategoryValue![widget.user.id].church;
 
     return AlertDialog(
         title: const Text(

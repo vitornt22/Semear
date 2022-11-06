@@ -26,21 +26,24 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   late AsyncSnapshot blocAsAsync;
   final userBloc = BlocProvider.getBloc<UserBloc>();
+  int? myId;
 
   @override
   void initState() {
     super.initState();
+    myId = userBloc.outMyIdValue;
 
     pages = {
       'church': ChurchProfilePage(
-          user: userBloc.outUserValue, first: true, type: 'me'),
+          user: userBloc.outUserValue![userBloc.outMyIdValue]!,
+          first: true,
+          type: 'me'),
       'project': ProfileProjectPage(
-          categoryData: userBloc.outCategory,
-          user: userBloc.outUserValue,
+          user: userBloc.outUserValue![userBloc.outMyIdValue]!,
           back: true,
           type: 'me'),
-      'missionary':
-          ProfileMissionaryPage(user: userBloc.outUserValue, type: 'me'),
+      'missionary': ProfileMissionaryPage(
+          user: userBloc.outUserValue![userBloc.outMyIdValue]!, type: 'me'),
       'donor': DonorProfilePage(type: 'me'),
     };
     print("TESTEEE: "); //${userBloc.outUser.category}");
@@ -94,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           items: items,
         ),
-        body: StreamBuilder<User>(
+        body: StreamBuilder<Map<int, User?>>(
           stream: userBloc.outUser,
           initialData: userBloc.outUserValue,
           builder: (context, snapshot) => PageView(
@@ -113,8 +116,8 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(color: const Color(0xffa23673A)),
               const TransactionPage(),
               snapshot.data != null &&
-                      snapshot.data!.category != 'AnonymousDonor'
-                  ? pages[snapshot.data!.category]
+                      snapshot.data![myId]!.category != 'AnonymousDonor'
+                  ? pages[snapshot.data![myId]!.category]
                   : Container(
                       color: Colors.yellow,
                     )

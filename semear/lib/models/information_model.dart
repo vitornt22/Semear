@@ -30,15 +30,15 @@ class Information {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['photo_profile'] = this.photoProfile;
-    data['resume'] = this.resume;
-    data['site'] = this.site;
-    data['whoAreUs'] = this.whoAreUs;
-    data['ourObjective'] = this.ourObjective;
-    data['photo1'] = this.photo1;
-    data['photo2'] = this.photo2;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['photo_profile'] = photoProfile;
+    data['resume'] = resume;
+    data['site'] = site;
+    data['whoAreUs'] = whoAreUs;
+    data['ourObjective'] = ourObjective;
+    data['photo1'] = photo1;
+    data['photo2'] = photo2;
     return data;
   }
 }

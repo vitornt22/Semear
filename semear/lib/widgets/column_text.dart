@@ -10,21 +10,24 @@ class ColumnText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          textAlign: TextAlign.start,
-          title,
-          style: const TextStyle(
-            color: Color(0xffa23673A),
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+    return Visibility(
+      visible: text.isNotEmpty,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            textAlign: TextAlign.start,
+            title,
+            style: const TextStyle(
+              color: Color(0xffa23673A),
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        const SizedBox(height: 20),
-        Text(text),
-      ],
+          const SizedBox(height: 20),
+          Text(text),
+        ],
+      ),
     );
   }
 }

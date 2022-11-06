@@ -1,33 +1,54 @@
 // ignore_for_file: prefer_const_constructors, must_be_immutable
 
+import 'dart:convert';
+
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
 import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/information_model.dart';
 import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/dialog_donation.dart';
+import 'package:semear/pages/profile/edit_profile.dart';
 import 'package:semear/widgets/button_filled.dart';
 import 'package:semear/widgets/column_text.dart';
 
-class InfoProject extends StatelessWidget {
+class InfoProject extends StatefulWidget {
   InfoProject(
       {super.key,
       required this.type,
       required this.user,
+      required this.categoryData,
       required this.category,
       required this.information});
 
   Information information;
   String category;
   String type;
-  final user;
+
+  User user;
+  final categoryData;
+
+  @override
+  State<InfoProject> createState() => _InfoProjectState();
+}
+
+class _InfoProjectState extends State<InfoProject> {
   final userBloc = BlocProvider.getBloc<UserBloc>();
+  int? id;
+
   Map title = {
     'missionary': ['Quem sou eu?', 'Onde atuo?'],
     'project': ['Quem somos nós?', 'Nosso Objetivo']
   };
 
-  late List<String> list = title[category];
+  late List<String> list = title[widget.category];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    id = widget.user.id;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,57 +59,114 @@ class InfoProject extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(20),
           child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ColumnText(
-                    title: list[0],
-                    text: information.whoAreUs ?? 'Nenhuma informação'),
-                SizedBox(height: 10),
-                ClipRRect(
-                  child: Image(
-                    image: NetworkImage(information.photo1!),
-                    width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                SizedBox(height: 10),
-                ColumnText(
-                    title: list[1],
-                    text: information.ourObjective ?? 'Não há informação'),
-                SizedBox(height: 10),
-                ClipRRect(
-                  child: Image(
-                    image: NetworkImage(information.photo2!),
-                    width: double.infinity,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                SizedBox(height: 20),
-                Visibility(
-                  visible: type != 'me',
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: ButtonFilled(
-                      text: 'Doe para o nosso projeto',
-                      onClick: () {
-                        showDialog(
-                            context: context,
-                            builder: (context) => DonationDialog(
-                                user: user, donor: userBloc.outUserValue));
-                      },
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20)
-              ],
+            child: StreamBuilder<Map<int, User?>>(
+              stream: userBloc.outUser,
+              initialData: userBloc.outUserValue,
+              builder: (context, snapshot) {
+                return snapshot.data![id]!.information!.id != null
+                    ? informations(context, snapshot.data![id]!.information)
+                    : Container(
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Scaffold(
+                                  body: EditProfile(),
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text('Adicionar Informações'),
+                        ),
+                      );
+              },
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget informations(context, data) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ColumnText(title: list[0], text: data.whoAreUs ?? 'Nenhuma informação'),
+        SizedBox(height: 10),
+        Visibility(
+          visible: data.whoAreUs.isNotEmpty,
+          child: ClipRRect(
+            child: data.photo1 != null
+                ? Image(
+                    image: NetworkImage(data.photo1!),
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  )
+                : Container(
+                    color: Colors.grey,
+                  ),
+          ),
+        ),
+        SizedBox(height: 10),
+        ColumnText(
+            title: list[1], text: data.ourObjective ?? 'Não há informação'),
+        SizedBox(height: 10),
+        Visibility(
+          visible: data.ourObjective.isNotEmpty,
+          child: ClipRRect(
+            child: Image(
+              image: NetworkImage(data.photo2 ?? ''),
+              width: double.infinity,
+              height: 200,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        SizedBox(height: 20),
+        Visibility(
+          visible: widget.type == 'me',
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Scaffold(
+                        body: EditProfile(),
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Editar Informações',
+                  style: TextStyle(color: Color.fromARGB(255, 37, 128, 40)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Visibility(
+          visible: widget.type != 'me',
+          child: SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: ButtonFilled(
+              text: 'Doe para o nosso projeto',
+              onClick: () {
+                showDialog(
+                    context: context,
+                    builder: (context) => DonationDialog(
+                        user: widget.user, donor: userBloc.outUserValue));
+              },
+            ),
+          ),
+        ),
+        SizedBox(height: 20)
+      ],
     );
   }
 }

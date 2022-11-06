@@ -19,10 +19,12 @@ class _PostSettingsState extends State<PostSettings> {
   final settingBloc = BlocProvider.getBloc<SettingBloc>();
   final userBloc = BlocProvider.getBloc<UserBloc>();
   final api = ApiSettings();
+  int? myId;
 
   @override
   void initState() {
     super.initState();
+    myId = userBloc.outMyIdValue;
     final save;
   }
 
@@ -78,7 +80,7 @@ class _PostSettingsState extends State<PostSettings> {
                       user: widget.publication.user!.category == 'project'
                           ? widget.publication.project
                           : widget.publication.missionary,
-                      donor: userBloc.outUserValue.id));
+                      donor: userBloc.outUserValue![myId]!.id));
             },
             child: const ListTile(
               leading: Icon(Icons.monetization_on),
@@ -92,7 +94,8 @@ class _PostSettingsState extends State<PostSettings> {
 
   void initializer() async {
     api
-        .getLabelFollower(userBloc.outUserValue.id, widget.publication.user!.id)
+        .getLabelFollower(
+            userBloc.outUserValue![myId]!.id, widget.publication.user!.id)
         .then((value) {
       settingBloc.changeFollower(widget.publication.user!.id, value);
       print("VALOR AQUI NA FUNCAO: $value");
@@ -100,7 +103,7 @@ class _PostSettingsState extends State<PostSettings> {
 
     api
         .getLabelPublicationSaved(
-            userBloc.outUserValue.id, widget.publication.id)
+            userBloc.outUserValue![myId]!.id, widget.publication.id)
         .then((value) {
       settingBloc.changeSavedPublication(widget.publication.id, value);
     });
@@ -111,7 +114,7 @@ class _PostSettingsState extends State<PostSettings> {
       onTap: () async {
         print("FOLLOWING");
         final value = await api.setFollower(
-            userBloc.outUserValue.id, widget.publication.user!.id);
+            userBloc.outUserValue![myId]!.id, widget.publication.user!.id);
         if (value != null) {
           userBloc.updateUser(value);
           settingBloc.changeFollower(widget.publication.user!.id, true);
@@ -138,7 +141,7 @@ class _PostSettingsState extends State<PostSettings> {
       onTap: () async {
         print("UNFOLLOWING");
         final value = await api.unFollow(
-            userBloc.outUserValue.id, widget.publication.user!.id);
+            userBloc.outUserValue![myId]!.id, widget.publication.user!.id);
         if (value != null) {
           userBloc.updateUser(value);
           settingBloc.changeFollower(widget.publication.user!.id, false);
@@ -158,10 +161,10 @@ class _PostSettingsState extends State<PostSettings> {
       onTap: () async {
         print("SavePublication");
         final value = await api.savePublication(
-            userBloc.outUserValue.id, widget.publication.id);
+            userBloc.outUserValue![myId]!.id, widget.publication.id);
         print("VALOR DO RETORNO DE SALVAR $value");
         if (value == true) {
-          api.getUser(userBloc.outUserValue.id).then((v) {
+          api.getUser(userBloc.outUserValue![myId]!.id).then((v) {
             print("VALORRR: $v");
             userBloc.updateUser(v);
             settingBloc.changeSavedPublication(widget.publication.id, true);
@@ -182,12 +185,12 @@ class _PostSettingsState extends State<PostSettings> {
       onTap: () async {
         print("UNFOLLOWING");
         final value = await api.unSavePublication(
-            userBloc.outUserValue.id, widget.publication.id);
+            userBloc.outUserValue![myId]!.id, widget.publication.id);
 
         print("VALOR $value");
 
         if (value == true) {
-          api.getUser(userBloc.outUserValue.id).then((v) {
+          api.getUser(userBloc.outUserValue![myId]!.id).then((v) {
             userBloc.updateUser(v);
             settingBloc.changeSavedPublication(widget.publication.id, false);
           });

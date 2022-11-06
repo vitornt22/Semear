@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:semear/apis/api_form_validation.dart';
 import 'package:semear/apis/api_settings.dart';
 import 'package:semear/models/church_model.dart';
 import 'package:semear/models/donor_model.dart';
@@ -17,11 +16,16 @@ import 'package:http/http.dart' as http;
 enum LoginState { idle, loading, success, fail }
 
 class UserBloc extends BlocBase with LoginValidators {
-  final _userController = BehaviorSubject<User>();
+  Map<int, User> listUsers = {};
+  Map<int, dynamic?> listCategoryData = {};
+  ApiSettings apiSettings = ApiSettings();
 
+  final _userController = BehaviorSubject<Map<int, User>>();
+  final _myId = BehaviorSubject<int>();
   final _emailController = BehaviorSubject<String>();
-  final _categoryDataController = BehaviorSubject<Object?>();
+  final _categoryDataController = BehaviorSubject<Map<int, dynamic?>>();
   final _passwordController = BehaviorSubject<String>();
+  final _tokenController = BehaviorSubject<String>();
   final _visibility = BehaviorSubject<bool>();
   final _stateController = BehaviorSubject<LoginState>();
 
@@ -35,8 +39,13 @@ class UserBloc extends BlocBase with LoginValidators {
     super.dispose();
   }
 
+  Sink get inMyId => _myId.sink;
   Stream<String> get outEmail =>
       _emailController.stream.transform(validateEmail);
+
+  Stream<int> get outMyId => _myId.stream;
+  Stream<Map<int, dynamic>> get outCategory => _categoryDataController.stream;
+
   Stream<String> get outPassword =>
       _passwordController.stream.transform(validatePassword);
   Stream<bool> get outVisibility =>
@@ -45,14 +54,22 @@ class UserBloc extends BlocBase with LoginValidators {
       Rx.combineLatest2(outEmail, outPassword, (a, b) {
         return true;
       });
-  Object? get outCategory => _categoryDataController.valueOrNull;
-  User get outUserValue => _userController.value;
-  Stream<User> get outUser => _userController.stream;
+  Map<int, dynamic>? get outCategoryValue =>
+      _categoryDataController.valueOrNull;
+  Map<int, User>? get outUserValue => _userController.valueOrNull;
+  Stream<Map<int, User?>> get outUser => _userController.stream;
+  String? get outToken => _tokenController.valueOrNull;
+  int? get outMyIdValue => _myId.valueOrNull;
 
   Stream<LoginState> get outState => _stateController.stream;
 
   Function(String) get changeEmail => _emailController.sink.add;
   Function(String) get changePassword => _passwordController.sink.add;
+
+  addUser(user) {
+    listUsers[user.id] = user;
+    _userController.add(listUsers);
+  }
 
   Future<bool> submit() async {
     _stateController.add(LoginState.loading);
@@ -71,8 +88,15 @@ class UserBloc extends BlocBase with LoginValidators {
 
   Future<Map<String, dynamic>> getCategoryData(method) async {
     http.Response response = await http.get(Uri.parse(
-        "https://backend-semear.herokuapp.com/$method/api/${_userController.value.id}/get${method}Data/"));
+        "https://backend-semear.herokuapp.com/$method/api/${_myId.value}/get${method}Data/"));
     return jsonDecode(response.body);
+  }
+
+  void updatePasswordOrEmail(field, value) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    final decodedMap = json.decode(sharedPreferences.getString('map')!);
+    decodedMap[field] = value;
+    sharedPreferences.setString('map', json.encode(decodedMap));
   }
 
   void updateUser(user) async {
@@ -81,20 +105,25 @@ class UserBloc extends BlocBase with LoginValidators {
     final decodedMap = json.decode(sharedPreferences.getString('map')!);
     decodedMap['user'] = user;
     sharedPreferences.setString('map', json.encode(decodedMap));
-    _userController.add(user);
+    addUser(user);
   }
 
   Future<bool> verificarToken() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    //sharedPreferences.clear();
     if (sharedPreferences.getString('map') != null) {
       final decodedMap = json.decode(sharedPreferences.getString('map')!);
-      _userController.add(User.fromJson(decodedMap['user']));
-      print("EIIII AQUI O VALOR: ${_userController.value.information!.resume}");
+      final user = User.fromJson(decodedMap['user']);
+      _myId.add(user.id!);
+      final value = await apiSettings.getUser(user.id);
+      addUser(value);
 
-      _categoryDataController.add(await addCategory());
-      print("ADD ${_userController.value.category}");
-      print("OBJECT USERRRRRR: ${_userController.valueOrNull}");
+      _tokenController.add(decodedMap['token']);
+      //print("EIIII AQUI O VALOR: ${listUsers[_myId.value]!.information!.id!}");
+
+      final c = await getCategory(_myId.value);
+      addCategory(_myId.value, c);
+      print("ADD ${listUsers[_myId.value]}");
+      print("dynamic USERRRRRR: ${_userController.valueOrNull}");
       print("CATEGORU MAP: ${decodedMap['category']}");
       print("PRINT 2: $decodedMap");
 
@@ -144,7 +173,7 @@ class UserBloc extends BlocBase with LoginValidators {
         sharedPreferences.setString('map', json.encode(decodedMap));
       }
       final api = ApiSettings();
-      await api.getUser(_userController.value.id).then((value) {
+      await api.getUser(_myId.value).then((value) {
         updateUser(value);
       });
       return true;
@@ -179,10 +208,13 @@ class UserBloc extends BlocBase with LoginValidators {
 
     print("DECODE ${jsonDecode(userData.body)["user"]["category"]}");
     final userMap = jsonDecode(userData.body)["user"];
-    _userController.add(User.fromJson(userMap));
+    final user = User.fromJson(userMap);
+    final value = await apiSettings.getUser(user.id);
+    _myId.add(user.id!);
+    addUser(value);
     // print("EIIII AQUI O VALOR: ${_userController.value.information!.resume}");
 
-    print("OUTTTT CATEGORY: $outCategory");
+    // print("OUTTTT CATEGORY: $outCategoryValue");
 
     if (response.statusCode == 200) {
       print('ENTROU E O CODIGO DEU CERTO');
@@ -199,19 +231,23 @@ class UserBloc extends BlocBase with LoginValidators {
     }
   }
 
-  Future<String?> addMap(var response) async {
+  Future<String?> addMap(response) async {
     print("CATEGORYYYY");
-    print("OUT CATEGORY: ${_userController.value.category}");
+    //print("OUT CATEGORY: ${listUsers[_myId.value]!.category}");
 
-    _categoryDataController.add(await addCategory());
+    final value = await getCategory(_myId.value);
+    addCategory(_myId.value, value);
+    print(value);
+    print("OPS");
+    // _tokenController.add(jsonDecode(response)['token']);
 
     Map<String, dynamic> saveItems = {
       "email": _emailController.valueOrNull,
       "password": _passwordController.valueOrNull,
       "token": jsonDecode(response)['access'],
       "refresh": jsonDecode(response)['refresh'],
-      "user": _userController.valueOrNull,
-      "categoryData": _categoryDataController.valueOrNull,
+      "user": _userController.valueOrNull![_myId.value],
+      "categoryData": _categoryDataController.value[_myId.value]
     };
 
     String encodedMap = json.encode(saveItems);
@@ -219,9 +255,16 @@ class UserBloc extends BlocBase with LoginValidators {
     return encodedMap;
   }
 
-  Future<Object?> addCategory() async {
-    final value = await getCategoryData(_userController.value.category);
-    final category = _userController.value.category;
+  addCategory(id, data) {
+    listCategoryData[id] = data;
+    _categoryDataController.add(listCategoryData);
+  }
+
+  Future<dynamic> getCategory(id) async {
+    final value =
+        await getCategoryData(_userController.value[_myId.value]!.category);
+    final category = _userController.value[_myId.value]!.category;
+    print("PSIU CATEGORU: $category");
     switch (category) {
       case 'project':
         return Project.fromJson(value);

@@ -48,7 +48,8 @@ class _SavedPublicationsState extends State<SavedPublications> {
         ),
       ),
       body: StreamBuilder<Map<int, List<dynamic>>>(
-        stream: profileBloc.outPublications,
+        stream: profileBloc.outSavedPublications,
+        initialData: profileBloc.outSavedPublicationValue,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data![widget.user.id] != null) {
@@ -56,7 +57,7 @@ class _SavedPublicationsState extends State<SavedPublications> {
                   context, snapshot.data![widget.user.id]);
             }
           }
-          getPublications();
+          getSavedPublications();
           return Center(
             child: CircularProgressIndicator(
               color: Colors.green,
@@ -82,7 +83,7 @@ class _SavedPublicationsState extends State<SavedPublications> {
           return GestureDetector(
               child: FadeInImage.memoryNetwork(
                 placeholder: kTransparentImage,
-                image: snapshot[index].upload,
+                image: snapshot[index].publication.upload!,
                 height: 300.0,
                 fit: BoxFit.cover,
               ),
@@ -91,7 +92,8 @@ class _SavedPublicationsState extends State<SavedPublications> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => PublicationClickPage(
-                        type: widget.type, publication: snapshot[index]),
+                        type: widget.type,
+                        publication: snapshot[index].publication),
                   ),
                 );
               },
@@ -104,9 +106,9 @@ class _SavedPublicationsState extends State<SavedPublications> {
     );
   }
 
-  void getPublications() async {
-    apiProfile.getPublications(widget.user.id).then((value) {
-      profileBloc.addPublications(widget.user.id, value);
+  void getSavedPublications() async {
+    apiProfile.getSavedPublications(widget.user.id).then((value) {
+      profileBloc.addPublicationSaved(widget.user.id, value);
     });
   }
 }

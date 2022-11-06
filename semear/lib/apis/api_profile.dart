@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:semear/models/donation_model.dart';
 import 'package:semear/models/follower_model.dart';
 import 'package:semear/models/publication_model.dart';
+import 'package:semear/models/saved_publication.dart';
 
 class ApiProfile {
   Future<List<dynamic>?> getFollowing(id) async {
@@ -59,6 +60,27 @@ class ApiProfile {
       final lista = json
           .decode(response.body)
           .map((value) => Publication.fromJson(value))
+          .toList();
+      return lista;
+    }
+    print('RETORNANDO NULL HERE');
+
+    return null;
+  }
+
+  Future<List<dynamic>?> getSavedPublications(id) async {
+    http.Response response;
+    response = await http.get(Uri.parse(
+        'https://backend-semear.herokuapp.com/publication/api/$id/getMyPublicationsSaved/'));
+
+    if (response.statusCode == 200) {
+      print('ENRRANDO HERE');
+      if (response.body == '{}') {
+        return null;
+      }
+      final lista = json
+          .decode(response.body)
+          .map((value) => SavedPublication.fromJson(value))
           .toList();
       return lista;
     }

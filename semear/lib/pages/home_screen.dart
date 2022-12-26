@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:semear/blocs/publications_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/user_model.dart';
+import 'package:semear/pages/profile/anonymous_profile.dart';
 import 'package:semear/pages/profile/donor/donor_profile_page.dart';
-import 'package:semear/pages/profile/missionary/missionary_profile_page.dart';
 import 'package:semear/pages/timeline/home_page.dart';
 import 'package:semear/pages/profile/church/church_profile_page.dart';
 import 'package:semear/pages/profile/project/project_profile_page.dart';
@@ -26,30 +26,42 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   late AsyncSnapshot blocAsAsync;
   final userBloc = BlocProvider.getBloc<UserBloc>();
+
   int? myId;
+  User? myUser;
 
   @override
   void initState() {
     super.initState();
     myId = userBloc.outMyIdValue;
+    print('MY IDDD $myId');
+    myUser = userBloc.outUserValue![myId];
 
-    pages = {
-      'church': ChurchProfilePage(
-          user: userBloc.outUserValue![userBloc.outMyIdValue]!,
-          first: true,
-          type: 'me'),
-      'project': ProfileProjectPage(
-          user: userBloc.outUserValue![userBloc.outMyIdValue]!,
-          back: true,
-          type: 'me'),
-      'missionary': ProfileMissionaryPage(
-          user: userBloc.outUserValue![userBloc.outMyIdValue]!, type: 'me'),
-      'donor': DonorProfilePage(type: 'me'),
-    };
+    pages = myUser!.category == 'anonymous'
+        ? {}
+        : {
+            'church': ChurchProfilePage(
+                user: userBloc.outUserValue![userBloc.outMyIdValue]!,
+                first: true,
+                back: true,
+                type: 'me'),
+            'project': ProfileProjectPage(
+                myChurch: false,
+                user: userBloc.outUserValue![userBloc.outMyIdValue]!,
+                back: true,
+                type: 'me'),
+            'missionary': ProfileProjectPage(
+                myChurch: false,
+                user: userBloc.outUserValue![userBloc.outMyIdValue]!,
+                back: true,
+                type: 'me'),
+            'donor': DonorProfilePage(
+              user: userBloc.outUserValue![userBloc.outMyIdValue]!,
+              type: 'me',
+            ),
+          };
     print("TESTEEE: "); //${userBloc.outUser.category}");
   }
-
-  int _page = 0;
 
   List<BottomNavigationBarItem> items = [
     BottomNavigationBarItem(
@@ -71,8 +83,10 @@ class _HomeScreenState extends State<HomeScreen> {
     BottomNavigationBarItem(
       icon: Icon(Icons.person, size: 30),
       label: 'Perfil',
-    ),
+    )
   ];
+
+  int _page = 0;
 
   @override
   void dispose() {
@@ -116,11 +130,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(color: const Color(0xffa23673A)),
               const TransactionPage(),
               snapshot.data != null &&
-                      snapshot.data![myId]!.category != 'AnonymousDonor'
+                      snapshot.data![myId]!.category != 'anonymous'
                   ? pages[snapshot.data![myId]!.category]
-                  : Container(
-                      color: Colors.yellow,
-                    )
+                  : AnonymousProfilePage(),
             ],
           ),
         ),

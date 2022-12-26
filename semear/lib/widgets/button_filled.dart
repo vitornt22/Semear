@@ -53,15 +53,18 @@ class _ButtonFilledState extends State<ButtonFilled> {
                       child: CircularProgressIndicator(color: Colors.green),
                     )
                   : Row(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Visibility(
-                            visible: widget.changeColor == true,
-                            child: SizedBox(
-                              width: 5,
-                            )),
+                          visible: widget.changeColor == true,
+                          child: SizedBox(
+                            width: 5,
+                          ),
+                        ),
                         Text(
                           widget.text,
+                          maxLines: 2,
                           style: TextStyle(
                             color: widget.changeColor == true
                                 ? Color(0xffa23673a)
@@ -75,7 +78,7 @@ class _ButtonFilledState extends State<ButtonFilled> {
                             size: 17,
                             color: Color(0xffa23673a),
                           ),
-                        )
+                        ),
                       ],
                     );
             }),

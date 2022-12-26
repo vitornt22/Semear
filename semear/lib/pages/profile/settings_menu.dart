@@ -1,11 +1,16 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/saved_publication.dart';
 import 'package:semear/models/user_model.dart';
+import 'package:semear/pages/initial_page.dart';
 import 'package:semear/pages/profile/edit_account.dart';
 import 'package:semear/pages/profile/edit_profile.dart';
 import 'package:semear/pages/profile/saved_publications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MenuSettings extends StatelessWidget {
   MenuSettings(
@@ -14,13 +19,54 @@ class MenuSettings extends StatelessWidget {
   Color? color;
   User user;
   final categoryData;
+  final userBloc = BlocProvider.getBloc<UserBloc>();
 
   @override
   Widget build(BuildContext context) {
+    final sair = PopupMenuItem(
+      child: GestureDetector(
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text(
+                'Deseja realmente sair da conta e fazer login depois?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context, 'Recusar');
+                  },
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final navigator = Navigator.of(context);
+                    SharedPreferences sharedPreferences =
+                        await SharedPreferences.getInstance();
+                    sharedPreferences.clear();
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (context) => InitialPage(),
+                      ),
+                    );
+                  },
+                  child: const Text('Sim'),
+                ),
+              ],
+            ),
+          );
+        },
+        child: const ListTile(
+          leading: Icon(Icons.logout),
+          title: Text('Sair'),
+        ),
+      ),
+    );
     final perfil = PopupMenuItem(
       child: GestureDetector(
         onTap: () {
-          next(context, EditProfile());
+          next(context, EditProfile(user: user));
         },
         child: const ListTile(
           leading: Icon(Icons.mode_edit_sharp),
@@ -52,6 +98,7 @@ class MenuSettings extends StatelessWidget {
               next(
                   context,
                   EditAccount(
+                    idCategory: categoryData.id,
                     user: user,
                   ));
             },
@@ -62,16 +109,13 @@ class MenuSettings extends StatelessWidget {
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
-          child: ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Sair'),
-          ),
-        ),
       ];
 
       if (NotisDonor()) {
         list.insert(0, perfil);
+      }
+      if (user.id == userBloc.outMyIdValue) {
+        list.add(sair);
       }
       return list;
     }

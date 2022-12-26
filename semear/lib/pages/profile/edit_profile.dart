@@ -11,6 +11,7 @@ import 'package:semear/apis/api_form_validation.dart';
 import 'package:semear/apis/api_settings.dart';
 import 'package:semear/blocs/edit_profile_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
+import 'package:semear/models/church_model.dart';
 import 'package:semear/models/missionary_model..dart';
 import 'package:semear/models/project_model.dart';
 import 'package:semear/models/user_model.dart';
@@ -21,8 +22,8 @@ import 'package:semear/pages/register/formsFields/forms_field.dart';
 import 'package:semear/validators/fields_validations.dart';
 
 class EditProfile extends StatefulWidget {
-  EditProfile({super.key});
-
+  EditProfile({super.key, required this.user});
+  User user;
   @override
   State<EditProfile> createState() => _EditProfileState();
 }
@@ -68,33 +69,38 @@ class _EditProfileState extends State<EditProfile> {
 
   late Future<Map<String, dynamic>> cep;
   final userBloc = BlocProvider.getBloc<UserBloc>();
-  late final categoryData = userBloc.outCategoryValue![userBloc.outMyIdValue];
-  late final user = userBloc.outUserValue![userBloc.outMyIdValue];
+  late int? id = widget.user.id;
+  late var categoryData = userBloc.outCategoryValue![id];
+  late var user = userBloc.outUserValue![id];
+  String link = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    //print(categoryData.bankData);
+
     print('INFORMATIOJNS ${user!.information!}');
-    if (isMissionaryOrProjet()) {
-      editBloc.inPhotoProfile.add(user!.information!.photoProfile ??
-          'https://cdn-icons-png.flaticon.com/512/149/149071.png');
+    if (isMissionaryOrProjet() && user!.information != null) {
+      editBloc.inPhotoProfile.add(user!.information!.photoProfile ?? link);
       editBloc.inImage1.add(user!.information!.photo1);
       editBloc.inImage2.add(user!.information!.photo2);
 
       nameController.text =
-          isProject() ? categoryData.name ?? '' : categoryData.fullname ?? '';
+          isProject() ? categoryData.name ?? '' : categoryData.fullName ?? '';
       resumeController.text = user!.information!.resume ?? '';
-      siteController.text = user!.information!.site ?? '';
-
-      whoAreUsController.text = user!.information!.whoAreUs ?? '';
-      ourObjectiveController.text = user!.information!.ourObjective ?? '';
-      zipCodeController.text = categoryData.adress.zipCode ?? '';
-      adressController.text = categoryData.adress.adress ?? '';
-      numberController.text = categoryData.adress.number ?? '';
-      stateController.text = categoryData.adress.uf ?? '';
-      districtController.text = categoryData.adress.district ?? '';
     }
+    siteController.text = user!.information!.site ?? '';
+
+    whoAreUsController.text = user!.information!.whoAreUs ?? '';
+    ourObjectiveController.text = user!.information!.ourObjective ?? '';
+    zipCodeController.text = categoryData.adress.zipCode ?? '';
+    cityController.text = categoryData.adress.city ?? '';
+    adressController.text = categoryData.adress.adress ?? '';
+    numberController.text = categoryData.adress.number ?? '';
+    stateController.text = categoryData.adress.uf ?? '';
+    districtController.text = categoryData.adress.district ?? '';
+
     //Bank
     if (isChurch()) {
       final bankData = categoryData.bankData;
@@ -109,7 +115,7 @@ class _EditProfileState extends State<EditProfile> {
       nameController.text = categoryData.name ?? '';
       // PI
       keyTypeController.text = pix.typeKey ?? '';
-      keyValueController.text = pix.valuekey ?? '';
+      keyValueController.text = pix.valueKey ?? '';
       ministeryController.text = categoryData.ministery ?? '';
     }
   }
@@ -127,8 +133,11 @@ class _EditProfileState extends State<EditProfile> {
                   editBloc.inLoading.add(true);
                   print(user!.information!.id);
                   await updateCategoryData();
-                  await CreateOrUpdateInformation(
-                      user!.information!.id == null ? 'POST' : 'PATCH');
+                  String method =
+                      user!.information!.id == null ? 'POST' : 'PATCH';
+
+                  print('MEHOOOO $method');
+                  await CreateOrUpdateInformation(method);
                   if ((isMissionaryOrProjet() && categoryData.idAdress == 0) ||
                       isChurch()) {
                     await updateAdress();
@@ -206,17 +215,25 @@ class _EditProfileState extends State<EditProfile> {
                                 ]),
                               ),
                             ),
-                            field(isProject() ? 'Nome' : 'Nome Completo',
-                                nameController),
+                            Visibility(
+                              visible: isProject(),
+                              child: field('Nome', nameController),
+                            ),
+                            Visibility(
+                              visible: isMissionary(),
+                              child: field('Nome Completo', nameController),
+                            ),
                             Visibility(
                               visible: isChurch(),
-                              child: field('Denomination', nameController),
+                              child: field('Denominação', nameController),
                             ),
                             Visibility(
                               visible: isChurch(),
                               child: field('Ministério', ministeryController),
                             ),
-                            field('Resumo', resumeController),
+                            Visibility(
+                                visible: isChurch() == false,
+                                child: field('Resumo', resumeController)),
                             field('Site', siteController),
                             isMissionaryOrProjet()
                                 ? field('Sobre o projeto', whoAreUsController)
@@ -224,37 +241,48 @@ class _EditProfileState extends State<EditProfile> {
                             isMissionaryOrProjet()
                                 ? field('Objetivo', ourObjectiveController)
                                 : SizedBox(),
-                            isMissionaryOrProjet()
-                                ? Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 15),
-                                    child: Column(
-                                      children: [
-                                        photoButton(context, 'Foto1',
-                                            editBloc.inImage1),
-                                        SizedBox(height: 5),
-                                        photoButton(context, 'Foto2',
-                                            editBloc.inImage2),
-                                      ],
-                                    ),
-                                  )
-                                : SizedBox(),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 15),
+                              child: Column(
+                                children: [
+                                  photoButton(
+                                      context, 'Foto1', editBloc.inImage1),
+                                  SizedBox(height: 5),
+                                  Visibility(
+                                    visible: isChurch == false,
+                                    child: photoButton(
+                                        context, 'Foto2', editBloc.inImage2),
+                                  ),
+                                ],
+                              ),
+                            ),
                             Visibility(
                               visible: (isMissionaryOrProjet() &&
                                       categoryData.idAdress == 0) ||
                                   isChurch(),
                               child: ExpansionTile(
                                 initiallyExpanded: true,
-                                title: Text('Endereço'),
+                                title: Text(
+                                  'Endereço',
+                                  style: TextStyle(
+                                      color: Color.fromARGB(255, 18, 120, 22)),
+                                ),
                                 children: [adressForm()],
                               ),
                             ),
                             Visibility(
                                 visible: isChurch(),
                                 child: ExpansionTile(
-                                  title: Text('Informações Bancárias'),
-                                  children: [],
+                                  textColor: Colors.green,
+                                  title: Text(
+                                    'Informações Bancárias',
+                                    style: TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 18, 120, 22)),
+                                  ),
+                                  children: [dataChurchForms()],
                                 )),
+                            SizedBox(height: 30),
                             Row(
                               children: [
                                 Padding(
@@ -287,6 +315,10 @@ class _EditProfileState extends State<EditProfile> {
     return user!.category == 'project';
   }
 
+  bool isMissionary() {
+    return user!.category == 'missionary';
+  }
+
   bool isChurch() {
     return user!.category == 'church';
   }
@@ -308,7 +340,7 @@ class _EditProfileState extends State<EditProfile> {
                 child: ClipRRect(
                   child: snapshot.data != null
                       ? Image(
-                          image: NetworkImage(snapshot.data!),
+                          image: FileImage(File(snapshot.data!)),
                           width: double.infinity,
                           height: 200,
                           fit: BoxFit.cover,
@@ -469,7 +501,6 @@ class _EditProfileState extends State<EditProfile> {
 
       File? newImage = File(croppedImage!.path);
       streamAdd.add(newImage.path);
-      navigator.pop();
     }
   }
 
@@ -538,6 +569,7 @@ class _EditProfileState extends State<EditProfile> {
                           Expanded(
                             flex: 4,
                             child: FormsField(
+                              max: 20,
                               keyboard: TextInputType.text,
                               controller: accountController,
                               label: 'Conta',
@@ -546,6 +578,7 @@ class _EditProfileState extends State<EditProfile> {
                           const SizedBox(width: 5),
                           Expanded(
                             child: FormsField(
+                              max: 1,
                               keyboard: TextInputType.text,
                               controller: accountDigitController,
                               label: 'Digito',
@@ -614,6 +647,7 @@ class _EditProfileState extends State<EditProfile> {
                       ),
                     ),
                     FormsField(
+                      max: 100,
                       keyboard: TextInputType.text,
                       controller: keyValueController,
                       label: 'Valor da Chave',
@@ -637,7 +671,7 @@ class _EditProfileState extends State<EditProfile> {
       case 'missionary':
         return Missionary.fromJson(data);
       case 'church':
-        return Project.fromJson(data);
+        return Church.fromJson(data);
       default:
         break;
     }
@@ -680,6 +714,9 @@ class _EditProfileState extends State<EditProfile> {
   updateCategoryData() async {
     final json = {};
 
+    if (isChurch()) {
+      json['ministery'] = ministeryController.text;
+    }
     if (isChurch() || isProject()) {
       if (isChurch()) {
         json['ministery'] = ministeryController.text;
@@ -699,7 +736,7 @@ class _EditProfileState extends State<EditProfile> {
       },
       body: jsonEncode(json),
     );
-    //print("RESPONSE BODY ${response.body}");
+    ////print("RESPONSE BODY ${response.body}");
     print(response.statusCode);
 
     if (response.statusCode == 200) {
@@ -710,7 +747,7 @@ class _EditProfileState extends State<EditProfile> {
   updateBankInformation() async {
     final response = await http.patch(
       Uri.parse(
-          "http://backend-semear.herokuapp.com/banKData/api/${categoryData.banKData.id}"),
+          "http://backend-semear.herokuapp.com/bankData/api/${categoryData.bankData.id}/"),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -724,7 +761,7 @@ class _EditProfileState extends State<EditProfile> {
         "digitAccount": accountDigitController.text
       }),
     );
-    print("RESPONSE BODY ${response.body}");
+    //print("RESPONSE BODY ${response.body}");
 
     if (response.statusCode == 200) {
       await updateUserCategory();
@@ -743,7 +780,7 @@ class _EditProfileState extends State<EditProfile> {
         "valueKey": keyValueController.text,
       }),
     );
-    print("RESPONSE BODY ${response.body}");
+    //print("RESPONSE BODY ${response.body}");
 
     if (response.statusCode == 200) {
       await updateUserCategory();
@@ -751,33 +788,35 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   CreateOrUpdateInformation(text) async {
+    print('-----------------------------------------------------');
+    print('INFORMATION ID ${user!.information!.id}');
+    print(text);
+    print('-----------------------------------------------------');
+
     final map = {
       'PATCH':
           "https://backend-semear.herokuapp.com/information/api/${user!.information!.id}/",
       'POST': "https://backend-semear.herokuapp.com/information/api/"
     };
-
+    print('MYYyyyyuyY ID ${user!.information!.id}');
     var request = http.MultipartRequest(
-      text,
-      Uri.parse(map[text]!),
+      'PATCH',
+      Uri.parse(
+          "https://backend-semear.herokuapp.com/information/api/${user!.information!.id}/"),
     );
 
-    if (isMissionaryOrProjet()) {
+    if (text == 'POST') {
+      print("entrou request");
       request.fields['id'] = user!.id.toString();
+      print("----------------------");
+      print("USER IDDDDD ${user!.id}");
+    }
+    request.fields['site'] = siteController.text.toString();
+
+    if (isMissionaryOrProjet()) {
       request.fields['resume'] = resumeController.text.toString();
-      request.fields['site'] = siteController.text.toString();
       request.fields['whoAreUs'] = whoAreUsController.text.toString();
       request.fields['ourObjective'] = ourObjectiveController.text.toString();
-
-      if (editBloc.outPhotoProfileValue != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'photo_profile',
-            File(editBloc.outPhotoProfileValue!).readAsBytesSync(),
-            filename: "ola",
-          ),
-        );
-      }
 
       if (editBloc.outImage2Value != null) {
         request.files.add(
@@ -790,7 +829,21 @@ class _EditProfileState extends State<EditProfile> {
       }
     }
     //photo is all users
+    print('EDITO BLOC ${editBloc.outImage1Value}');
+
+    if (editBloc.outPhotoProfileValue != null &&
+        editBloc.outPhotoProfileValue != link) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'photo_profile',
+          File(editBloc.outPhotoProfileValue!).readAsBytesSync(),
+          filename: "ola",
+        ),
+      );
+    }
+    print('IMAGE 1 VALUEEEE ${editBloc.outImage1Value}');
     if (editBloc.outImage1Value != null) {
+      print('ENTRANDO AQUIIII');
       request.files.add(
         http.MultipartFile.fromBytes(
           'photo1',
@@ -801,8 +854,11 @@ class _EditProfileState extends State<EditProfile> {
     }
 
     var res = await request.send();
+
     print("RES $res");
-    print('Eai ${res.statusCode}');
+    print('--------------------------------');
+    print('Eai COOOOOOODDEEEEEEEEEEE ${res.statusCode}');
+    print('--------------------------------');
 
     if (res.statusCode == 200) {
       await updateUserCategory();
@@ -811,9 +867,11 @@ class _EditProfileState extends State<EditProfile> {
 
   updateUserCategory() async {
     final response = await apiSettings.getUser(user!.id);
-    final categoryData = await getCategoryData();
+    final c = await getCategoryData();
+    user = response;
+    categoryData = c;
     userBloc.addUser(response);
-    userBloc.addCategory(user!.id, categoryData);
+    userBloc.addCategory(response!.id, categoryData);
   }
 
   getCategory() {

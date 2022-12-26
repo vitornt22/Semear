@@ -10,7 +10,6 @@ class Project {
   User? user;
   Adress? adress;
   Church? church;
-  Information? information;
   List<Follower>? following;
   List<Follower>? followers;
   int? idChurch;
@@ -23,7 +22,6 @@ class Project {
       this.idUser,
       this.adress,
       this.church,
-      this.information,
       this.following,
       this.followers,
       this.idChurch,
@@ -40,9 +38,6 @@ class Project {
     }
     adress = json['adress'] != null ? Adress.fromJson(json['adress']) : null;
     church = json['church'] != null ? Church.fromJson(json['church']) : null;
-    information = json['information'] != null
-        ? Information.fromJson(json['information'])
-        : null;
     if (json['following'] != null) {
       following = <Follower>[];
       json['following'].forEach((v) {
@@ -72,9 +67,7 @@ class Project {
     if (church != null) {
       data['church'] = church!.toJson();
     }
-    if (information != null) {
-      data['information'] = information!.toJson();
-    }
+
     if (following != null) {
       data['following'] = following!.map((v) => v.toJson()).toList();
     }

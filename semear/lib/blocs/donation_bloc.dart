@@ -2,12 +2,16 @@ import 'dart:io';
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:http/http.dart' as http;
+import 'package:semear/models/numbers_card_model.dart';
 
 class DonationBloc extends BlocBase {
+  final numberList = {};
   final anonymousCheckController = BehaviorSubject<bool>.seeded(false);
   final _imageControlller = BehaviorSubject<File?>();
   final _loadingController = BehaviorSubject<bool>.seeded(false);
   final _errorImageController = BehaviorSubject<bool>.seeded(false);
+  final allDonationsController = BehaviorSubject<List<dynamic>>();
+  final numbersCard = BehaviorSubject<NumbersCard?>.seeded(null);
 
   Sink get inAnonymousController => anonymousCheckController.sink;
   Stream<bool> get outAnonymousController => anonymousCheckController.stream;
@@ -20,11 +24,27 @@ class DonationBloc extends BlocBase {
   Sink get inErrorImage => _errorImageController.sink;
   Sink get inLoadingController => _loadingController.sink;
 
+  Stream<List<dynamic>> get outAllTransactions => allDonationsController.stream;
+  Stream<NumbersCard?> get outNumbersCard => numbersCard.stream;
+
+  List<dynamic>? get outAllTransactionsValue =>
+      allDonationsController.valueOrNull;
+  NumbersCard? get outNumbersCardValue => numbersCard.valueOrNull;
+
   void reset() {
     _loadingController.add(false);
     anonymousCheckController.add(false);
     _imageControlller.add(null);
     _errorImageController.add(false);
+  }
+
+  updateAllTransactions(list) {
+    list = list ?? [];
+    allDonationsController.add(list);
+  }
+
+  addNumberCard(map) {
+    numbersCard.add(map);
   }
 
   Future<bool> submit(value, payment, user, donor) async {

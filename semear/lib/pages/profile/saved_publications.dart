@@ -71,38 +71,52 @@ class _SavedPublicationsState extends State<SavedPublications> {
   Widget createPublicationTable(BuildContext context, snapshot) {
     return Container(
       color: Colors.white,
-      child: GridView.builder(
-        padding: const EdgeInsets.all(10.0),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10.0,
-          mainAxisSpacing: 10,
-        ),
-        itemCount: snapshot.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-              child: FadeInImage.memoryNetwork(
-                placeholder: kTransparentImage,
-                image: snapshot[index].publication.upload!,
-                height: 300.0,
-                fit: BoxFit.cover,
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PublicationClickPage(
-                        type: widget.type,
-                        publication: snapshot[index].publication),
+      child: snapshot.isEmpty
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Text(
+                    'Não há publicações Salvas',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.green),
                   ),
-                );
+                ),
+              ],
+            )
+          : GridView.builder(
+              padding: const EdgeInsets.all(10.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: snapshot.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                    child: FadeInImage.memoryNetwork(
+                      placeholder: kTransparentImage,
+                      image: snapshot[index].publication.upload!,
+                      height: 300.0,
+                      fit: BoxFit.cover,
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PublicationClickPage(
+                              type: widget.type,
+                              publication: snapshot[index].publication),
+                        ),
+                      );
+                    },
+                    onLongPress: () {
+                      //Share.share(snapshot.data["data"][index]["images"]["fixed_height"]
+                      //["url"]);
+                    });
               },
-              onLongPress: () {
-                //Share.share(snapshot.data["data"][index]["images"]["fixed_height"]
-                //["url"]);
-              });
-        },
-      ),
+            ),
     );
   }
 

@@ -117,7 +117,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
         },
         "cnpj": cnpjController.text,
         "ministery": ministeryController.text,
-        "name": nameController.text,
+        "name": denominationController.text,
         "information": null
       }),
     );
@@ -323,6 +323,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                 hint: 'Ex: Assembleia de Deus',
               ),
               FormsField(
+                max: 50,
                 keyboard: TextInputType.text,
                 controller: ministeryController,
                 label: 'Ministério',
@@ -533,6 +534,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                           Expanded(
                             flex: 4,
                             child: FormsField(
+                              max: 20,
                               keyboard: TextInputType.text,
                               controller: accountController,
                               label: 'Conta',
@@ -541,6 +543,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                           const SizedBox(width: 5),
                           Expanded(
                             child: FormsField(
+                              max: 1,
                               keyboard: TextInputType.text,
                               controller: accountDigitController,
                               label: 'Digito',
@@ -608,6 +611,7 @@ class _ChurchRegisterState extends State<ChurchRegister> {
                       ),
                     ),
                     FormsField(
+                      max: 100,
                       keyboard: TextInputType.text,
                       controller: keyValueController,
                       label: 'Valor da Chave',

@@ -4,6 +4,7 @@ import 'package:semear/apis/api_settings.dart';
 import 'package:semear/blocs/settings_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/publication_model.dart';
+import 'package:semear/pages/timeline/edit_publication.dart';
 
 class MyPostSettings extends StatefulWidget {
   MyPostSettings({super.key, required this.publication});
@@ -63,10 +64,19 @@ class _MyPostSettingsState extends State<MyPostSettings> {
       color: const Color.fromARGB(255, 245, 239, 239),
       icon: const Icon(Icons.more_vert),
       itemBuilder: (BuildContext context) => [
-        const PopupMenuItem(
-          child: ListTile(
-            leading: Icon(Icons.edit),
-            title: Text('Editar Publicação'),
+        PopupMenuItem(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => EditPublicationPage(
+                          publication: widget.publication)));
+            },
+            child: const ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('Editar Publicação'),
+            ),
           ),
         ),
         const PopupMenuItem(

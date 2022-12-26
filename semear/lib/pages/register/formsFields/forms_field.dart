@@ -12,6 +12,7 @@ class FormsField extends StatefulWidget {
       this.cnpjController,
       this.onChangedVar,
       required this.keyboard,
+      required this.max,
       this.formkey,
       this.mask,
       this.validator,
@@ -30,6 +31,7 @@ class FormsField extends StatefulWidget {
   TextInputType keyboard;
   TextEditingController? cnpjController;
   late String? mask;
+  int max;
   String? Function(String? value)? validator;
   String? label;
   double? height = 8;
@@ -101,6 +103,7 @@ class _FormsFieldState extends State<FormsField> {
             : SizedBox(),
         SizedBox(height: 10),
         TextFormField(
+          maxLength: widget.max,
           obscureText: widget.obscureText ?? false,
           onChanged: widget.onChangedVar ?? onChanged,
           validator: widget.validator ??

@@ -21,7 +21,7 @@ class InfoProject extends StatefulWidget {
       required this.category,
       required this.information});
 
-  Information information;
+  Information? information;
   String category;
   String type;
 
@@ -47,6 +47,7 @@ class _InfoProjectState extends State<InfoProject> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    print(id);
     id = widget.user.id;
   }
 
@@ -63,23 +64,35 @@ class _InfoProjectState extends State<InfoProject> {
               stream: userBloc.outUser,
               initialData: userBloc.outUserValue,
               builder: (context, snapshot) {
-                return snapshot.data![id]!.information!.id != null
+                return snapshot.data![id]!.information != null
                     ? informations(context, snapshot.data![id]!.information)
-                    : Container(
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Scaffold(
-                                  body: EditProfile(),
-                                ),
-                              ),
-                            );
-                          },
-                          child: Text('Adicionar Informações'),
-                        ),
-                      );
+                    : widget.type != 'me'
+                        ? Padding(
+                            padding: EdgeInsets.only(top: 10),
+                            child: Text(
+                              "Ainda não há informações",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 23, 113, 26)),
+                            ),
+                          )
+                        : Container(
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Scaffold(
+                                      body: EditProfile(
+                                        user: widget.user,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text('Adicionar Informações'),
+                            ),
+                          );
               },
             ),
           ),
@@ -95,7 +108,7 @@ class _InfoProjectState extends State<InfoProject> {
         ColumnText(title: list[0], text: data.whoAreUs ?? 'Nenhuma informação'),
         SizedBox(height: 10),
         Visibility(
-          visible: data.whoAreUs.isNotEmpty,
+          visible: data.whoAreUs != null,
           child: ClipRRect(
             child: data.photo1 != null
                 ? Image(
@@ -114,7 +127,7 @@ class _InfoProjectState extends State<InfoProject> {
             title: list[1], text: data.ourObjective ?? 'Não há informação'),
         SizedBox(height: 10),
         Visibility(
-          visible: data.ourObjective.isNotEmpty,
+          visible: data.ourObjective != null,
           child: ClipRRect(
             child: Image(
               image: NetworkImage(data.photo2 ?? ''),
@@ -136,7 +149,7 @@ class _InfoProjectState extends State<InfoProject> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => Scaffold(
-                        body: EditProfile(),
+                        body: EditProfile(user: widget.user),
                       ),
                     ),
                   );

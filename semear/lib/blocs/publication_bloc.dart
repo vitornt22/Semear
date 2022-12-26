@@ -89,6 +89,8 @@ class PublicationBloc extends BlocBase {
   Sink get inComments => comments.sink;
 
   Sink get inImage => _imageControlller.sink;
+  Sink get inLoading => _loadingController.sink;
+
   Sink get inChekedImage => _checkedImage.sink;
   Sink get inSnackBarText => _snackBarText.sink;
 
@@ -142,7 +144,7 @@ class PublicationBloc extends BlocBase {
     print("PUBLICATION VALUE AQUI VTIROOOO: ${_publicationsController.value}");
   }
 
-  Future<bool> submit() async {
+  Future<bool> submit(id) async {
     //var image = await imagem.readAsBytes();
     _loadingController.add(true);
     var imagem = _imageControlller.value;
@@ -151,9 +153,8 @@ class PublicationBloc extends BlocBase {
       var request = http.MultipartRequest('POST',
           Uri.parse("https://backend-semear.herokuapp.com/publication/api/"));
 
-      print("USUARIO AQUI : ${userBloc.outUserValue![userBloc.outMyId]!.id}");
-      request.fields['id_user'] =
-          userBloc.outUserValue![userBloc.outMyId]!.id.toString();
+      //print("USUARIO AQUI : ${userBloc.outUserValue![userBloc.outMyId]!.id}");
+      request.fields['id_user'] = id.toString();
       request.fields['legend'] = _legendController.valueOrNull ?? " ";
       request.fields['user'] = null.toString();
       request.fields['likes'] = [].toString();
@@ -171,6 +172,7 @@ class PublicationBloc extends BlocBase {
       var res = await request.send();
       if (res.statusCode == 200) {
         _loadingController.add(false);
+        _imageControlller.add(null);
         return true;
       } else {
         _loadingController.add(false);

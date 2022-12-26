@@ -65,6 +65,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget zipCode() {
     return FormsField(
+      max: 9,
       label: 'CEP',
       mask: '#####-###',
       sizeBoxHeigth: 10,
@@ -78,6 +79,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget email() {
     return FormsField(
+      max: 200,
       autofill: const [AutofillHints.email],
       keyboard: TextInputType.emailAddress,
       controller: widget.controller,
@@ -95,6 +97,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget contact() {
     return FormsField(
+      max: 16,
       mask: '(##)#####-####',
       keyboard: TextInputType.number,
       controller: widget.controller,
@@ -106,6 +109,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget password() {
     return FormsField(
+      max: 20,
       validator: widget.validator ?? validations.checkPassword,
       keyboard: TextInputType.text,
       controller: widget.controller,
@@ -119,6 +123,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget basic() {
     return FormsField(
+      max: 100,
       keyboard: TextInputType.text,
       controller: widget.controller,
       label: widget.label,
@@ -130,6 +135,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget username() {
     return FormsField(
+      max: 100,
       keyboard: TextInputType.text,
       controller: widget.controller,
       label: "Username",
@@ -141,6 +147,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget valueFloat() {
     return FormsField(
+      max: 10000,
       keyboard: TextInputType.number,
       digit: true,
       controller: widget.controller,
@@ -153,6 +160,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget cnpj() {
     return FormsField(
+      max: 14,
       keyboard: TextInputType.number,
       mask: '##############',
       controller: widget.controller,
@@ -164,6 +172,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget church() {
     return FormsField(
+      max: 14,
       keyboard: TextInputType.number,
       mask: '##############',
       controller: widget.controller,
@@ -175,6 +184,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget basicNumber() {
     return FormsField(
+      max: 100,
       keyboard: TextInputType.number,
       controller: widget.controller,
       label: widget.label,
@@ -251,6 +261,7 @@ class _FieldClassState extends State<FieldClass> {
 
   Widget agency() {
     return FormsField(
+      max: 5,
       keyboard: TextInputType.number,
       controller: widget.controller,
       mask: '#####',
@@ -266,6 +277,7 @@ class _FieldClassState extends State<FieldClass> {
       keyboard: TextInputType.text,
       controller: widget.controller,
       mask: '#',
+      max: 1,
       validator: validations.checkEmpty,
       label: 'Dígito',
       sizeBoxHeigth: 10,

@@ -3,32 +3,28 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
 import 'package:semear/blocs/user_bloc.dart';
-import 'package:semear/models/donor_model.dart';
-import 'package:semear/models/information_model.dart';
 import 'package:semear/models/user_model.dart';
+import 'package:semear/pages/initial_page.dart';
 import 'package:semear/pages/profile/donor/projects_helped.dart';
 import 'package:semear/pages/profile/following_screen.dart';
 import 'package:semear/pages/profile/project/donations_projects_tab.dart';
 import 'package:semear/pages/profile/settings_menu.dart';
 import 'package:semear/widgets/button_filled.dart';
-import 'package:semear/pages/profile/project/info_project_tab.dart';
 
-class DonorProfilePage extends StatefulWidget {
-  DonorProfilePage({super.key, required this.user, required this.type});
-
-  String type;
-  User user;
+class AnonymousProfilePage extends StatefulWidget {
+  const AnonymousProfilePage({
+    super.key,
+  });
 
   @override
-  State<DonorProfilePage> createState() => _DonorProfilePageState();
+  State<AnonymousProfilePage> createState() => _AnonymousProfilePageState();
 }
 
-class _DonorProfilePageState extends State<DonorProfilePage>
+class _AnonymousProfilePageState extends State<AnonymousProfilePage>
     with TickerProviderStateMixin {
   late TabController _tabController;
   final userBloc = BlocProvider.getBloc<UserBloc>();
   bool hasSite = true;
-  late int? idUser = widget.user.id;
   String link = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
   @override
@@ -43,23 +39,33 @@ class _DonorProfilePageState extends State<DonorProfilePage>
     return CustomScrollView(
       slivers: [
         SliverAppBar(
-          leading: Visibility(
-            visible: widget.type == 'me' ? false : true,
-            child: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(Icons.arrow_back, color: Colors.black),
-            ),
-          ),
           backgroundColor: Colors.white,
           centerTitle: true,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: TextButton.icon(
+                  style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all(Colors.green)),
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => InitialPage()),
+                        (route) => false);
+                  },
+                  icon: Icon(
+                    Icons.exit_to_app,
+                    color: Colors.green,
+                  ),
+                  label: Text('Sair ')),
+            )
+          ],
           title: StreamBuilder<Map<int, User?>>(
               stream: userBloc.outUser,
               initialData: userBloc.outUserValue,
               builder: (context, snapshot) {
                 return Text(
-                  snapshot.data![widget.user.id]!.username ?? '',
+                  'Anônimo',
                   style: TextStyle(color: Color(0xffa23673A)),
                 );
               }),
@@ -84,16 +90,9 @@ class _DonorProfilePageState extends State<DonorProfilePage>
                             builder: (context, snapshot) {
                               return CircleAvatar(
                                 backgroundColor: Colors.green,
-                                backgroundImage:
-                                    snapshot.data![idUser]!.information != null
-                                        ? NetworkImage(
-                                            snapshot.data![idUser]!.information!
-                                                    .photoProfile ??
-                                                'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-                                          )
-                                        : NetworkImage(
-                                            'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-                                          ),
+                                backgroundImage: AssetImage(
+                                  'assets/images/anonimo.png',
+                                ),
                                 radius: 60,
                               );
                             }),
@@ -112,9 +111,7 @@ class _DonorProfilePageState extends State<DonorProfilePage>
                                         initialData: userBloc.outCategoryValue,
                                         builder: (context, snapshot) {
                                           return Text(
-                                            snapshot.data![widget.user.id]!
-                                                    .fullName ??
-                                                "",
+                                            'Usuário Anônimo',
                                             maxLines: 3,
                                             style: TextStyle(
                                                 fontSize: 20,
@@ -122,15 +119,6 @@ class _DonorProfilePageState extends State<DonorProfilePage>
                                           );
                                         }),
                                   ),
-                                  Visibility(
-                                    visible: widget.type == 'me' ? true : false,
-                                    child: MenuSettings(
-                                      categoryData: userBloc
-                                          .outCategoryValue![widget.user.id],
-                                      user: userBloc
-                                          .outUserValue![widget.user.id]!,
-                                    ),
-                                  )
                                 ],
                               ),
                               Row(
@@ -175,29 +163,14 @@ class _DonorProfilePageState extends State<DonorProfilePage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: ButtonFilled(
-                          text: 'Seguindo',
-                          onClick: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => FollowingScreen(
-                                          user: widget.user,
-                                          first: true,
-                                        )));
-                          }),
+                      child: ButtonFilled(text: 'Seguindo', onClick: () {}),
                     ),
                     Expanded(
-                        child: ButtonFilled(
-                            text: 'Projetos que Ajudei',
-                            onClick: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => ProjectsHelped(
-                                          type: widget.type,
-                                          user: widget.user)));
-                            })),
+                      child: ButtonFilled(
+                        text: 'Projetos que Ajudei',
+                        onClick: () {},
+                      ),
+                    ),
                   ],
                 ),
                 Divider(),
@@ -239,12 +212,9 @@ class _DonorProfilePageState extends State<DonorProfilePage>
           child: TabBarView(
             controller: _tabController,
             children: [
-              DonationsProject(
-                type: widget.type,
-                user: widget.user,
-              ),
+              Container(),
               Container(
-                color: Colors.green,
+                color: Colors.white,
               )
             ],
           ),

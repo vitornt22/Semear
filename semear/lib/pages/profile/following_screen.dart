@@ -6,13 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:semear/apis/api_profile.dart';
 import 'package:semear/apis/api_settings.dart';
 import 'package:semear/blocs/followers_bloc.dart';
+import 'package:semear/blocs/profile_bloc.dart';
 import 'package:semear/blocs/settings_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
-import 'package:semear/models/follower_model.dart';
+import 'package:semear/models/church_model.dart';
+import 'package:semear/models/donor_model.dart';
+import 'package:semear/models/missionary_model..dart';
 import 'package:semear/models/project_model.dart';
 import 'package:semear/models/user_model.dart';
+import 'package:semear/pages/profile/church/church_profile_page.dart';
 import 'package:semear/pages/profile/donor/donor_profile_page.dart';
-import 'package:semear/pages/profile/missionary/missionary_profile_page.dart';
 import 'package:semear/pages/profile/project/project_profile_page.dart';
 import 'package:semear/widgets/button_filled.dart';
 
@@ -34,6 +37,8 @@ class _FollowingScreenState extends State<FollowingScreen> {
   final followerBloc = BlocProvider.getBloc<FollowersBloc>();
   final settings = ApiSettings();
   final userBloc = BlocProvider.getBloc<UserBloc>();
+  final profileBloc = BlocProvider.getBloc<ProfileBloc>();
+
   final settingBloc = BlocProvider.getBloc<SettingBloc>();
   int? myId;
 
@@ -157,7 +162,8 @@ class _FollowingScreenState extends State<FollowingScreen> {
                           initializer();
                         }
                         if (snapshot.hasData) {
-                          if (snapshot.data![widget.user.id] != null) {
+                          if (snapshot.data![widget.user.id] != null ||
+                              snapshot.data![widget.user.id]!.isNotEmpty) {
                             return listFollowing(
                                 snapshot.data![widget.user.id]);
                           } else {
@@ -202,101 +208,128 @@ class _FollowingScreenState extends State<FollowingScreen> {
   }
 
   Widget listFollowing(data) {
-    return ListView.separated(
-        separatorBuilder: (context, index) => const Divider(thickness: 1),
-        itemCount: data.length,
-        itemBuilder: (context, index) {
-          print("INDEC NUMBER: ${data[index].user2.id}");
+    return data != null || data.isNotEmpty
+        ? ListView.separated(
+            separatorBuilder: (context, index) => const Divider(thickness: 1),
+            itemCount: data.isEmpty ? 1 : data.length,
+            itemBuilder: (context, index) {
+              //print("INDEC NUMBER: ${data[index].user2.id}");
 
-          return ListTile(
-            title: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => Scaffold(
-                          bottomSheet: Container(
-                            color: Colors.white,
-                            width: double.infinity,
-                            height: 80,
-                            child: ButtonFilled(
-                              text: widget.first == true
-                                  ? 'Voltar ao meu perfil'
-                                  : "Voltar aos comentários",
-                              onClick: () {
-                                print("WIDGET.FIRST, ${widget.first}");
-                                widget.first == false
-                                    ? Navigator.of(context).popUntil((route) =>
-                                        route.settings.arguments == true)
-                                    : Navigator.of(context).popUntil(
-                                        (route) => route.isFirst == true);
-                              },
-                            ),
+              return data.isEmpty
+                  ? Text('Você não está seguindo ninguém')
+                  : ListTile(
+                      title: GestureDetector(
+                        onTap: () {
+                          // print("CATWEGORY DAT ${data[index].user2Data}");
+                          // print("USERRRR ${data[index].user}");
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Scaffold(
+                                    bottomSheet: Container(
+                                      color: Colors.white,
+                                      width: double.infinity,
+                                      height: 80,
+                                      child: ButtonFilled(
+                                        text: widget.first == true
+                                            ? 'Voltar ao meu perfil'
+                                            : "Voltar aos comentários",
+                                        onClick: () {
+                                          print(
+                                              "WIDGET.FIRST, ${widget.first}");
+                                          widget.first == false
+                                              ? Navigator.of(context).popUntil(
+                                                  (route) =>
+                                                      route
+                                                          .settings.arguments ==
+                                                      true)
+                                              : Navigator.of(context).popUntil(
+                                                  (route) =>
+                                                      route.isFirst == true);
+                                        },
+                                      ),
+                                    ),
+                                    body: nextPage(
+                                      data[index].user2.category,
+                                      data[index].user2,
+                                      data[index].user2Data,
+                                    ))),
+                          );
+                        },
+                        child: Text(
+                          data[index].user2.id == myId
+                              ? 'Você'
+                              : data[index].user2.username ?? '',
+                          style: const TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(
+                            height: 4,
                           ),
-                          body: nextPage(
-                            data[index].user2.category,
-                            data[index].user2,
-                            data[index].user2Data,
-                          ))),
-                );
-              },
-              child: Text(
-                data[index].user2.username,
-                style: const TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.w600),
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(
-                  height: 4,
-                ),
-                Text(
-                  category(data[index].user2.category)!,
-                  style: const TextStyle(
-                      color: Colors.green, fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.start,
-                )
-              ],
-            ),
-            leading: ClipOval(
-              child: Image.asset(
-                'assets/images/amigos.jpeg',
-                alignment: Alignment.bottomLeft,
-              ),
-            ),
-            trailing: Visibility(
-              visible: visibility(data[index]) ? true : false,
-              child: StreamBuilder<Map<int, Map<int, bool>>>(
-                  stream: followerBloc.labelController,
-                  initialData: followerBloc.outLabelValue,
-                  builder: (context, snapshot) {
-                    followerBloc.addLabelButton(
-                        userBloc.outUserValue![myId]!.id, data[index].user2.id);
-                    if (snapshot.hasData) {
-                      if (snapshot.data![userBloc.outUserValue![myId]!.id]![
-                              data[index].user2.id] !=
-                          null) {
-                        final check = snapshot.data![userBloc
-                            .outUserValue![myId]!.id]![data[index].user2.id];
-                        if (check == true) {
-                          return unFollow(data[index].user2);
-                        } else {
-                          return follow(data[index].user2);
-                        }
-                      }
-                    }
+                          Text(
+                            category(data[index].user2.category) ?? '',
+                            style: const TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.w600),
+                            textAlign: TextAlign.start,
+                          )
+                        ],
+                      ),
+                      leading: data[index].user2.information.photoProfile !=
+                              null
+                          ? ClipOval(
+                              child: Image.network(
+                                data[index].user2.information.photoProfile ??
+                                    '',
+                                alignment: Alignment.bottomLeft,
+                              ),
+                            )
+                          : ClipOval(
+                              child: Image.asset(
+                                'assets/images/avatar.png',
+                                alignment: Alignment.bottomLeft,
+                              ),
+                            ),
+                      trailing: Visibility(
+                        visible: visibility(data[index]) ? true : false,
+                        child: StreamBuilder<Map<int, Map<int, bool>>>(
+                            stream: followerBloc.labelController,
+                            initialData: followerBloc.outLabelValue,
+                            builder: (context, snapshot) {
+                              followerBloc.addLabelButton(
+                                  userBloc.outUserValue![myId]!.id,
+                                  data[index].user2.id);
+                              if (snapshot.hasData) {
+                                if (snapshot.data![userBloc.outUserValue![myId]!
+                                        .id]![data[index].user2.id] !=
+                                    null) {
+                                  final check = snapshot.data![userBloc
+                                      .outUserValue![myId]!
+                                      .id]![data[index].user2.id];
+                                  if (check == true) {
+                                    return unFollow(data[index].user2);
+                                  } else {
+                                    return follow(data[index].user2);
+                                  }
+                                }
+                              }
 
-                    return const SizedBox(
-                      height: 15,
-                      width: 15,
-                      child: CircularProgressIndicator(color: Colors.green),
+                              return const SizedBox(
+                                height: 15,
+                                width: 15,
+                                child: CircularProgressIndicator(
+                                    color: Colors.green),
+                              );
+                            }),
+                      ),
                     );
-                  }),
-            ),
-          );
-        });
+            })
+        : Text('teste');
   }
 
   Widget follow(data) {
@@ -339,7 +372,9 @@ class _FollowingScreenState extends State<FollowingScreen> {
   }
 
   bool visibility(data) {
-    return userBloc.outUserValue![myId]!.id != data.user2.id &&
+    return userBloc.outUserValue![userBloc.outMyIdValue]!.category !=
+            'anonymous' &&
+        userBloc.outUserValue![myId]!.id != data.user2.id &&
         (data.user2.category == 'project' ||
             data.user2.category == 'missionary');
   }
@@ -414,34 +449,63 @@ class _FollowingScreenState extends State<FollowingScreen> {
     return map[category];
   }
 
-  nextPage(category, user, userdata) {
+  bool getMyChurch(data) {
+    final id = userBloc.outMyIdValue;
+
+    if (userBloc.outUserValue![id]!.category == 'church') {
+      return profileBloc.outProjectsChurchValue![id]!.contains(data.id);
+    }
+    return false;
+  }
+
+  Widget nextPage(category, user, userdata) {
     print("ENTROU NEXTPAGE0");
     var categoryData = null;
     late final object;
-    print(myId);
 
     switch (category) {
       case 'project':
         categoryData = Project.fromJson(userdata);
         object = ProfileProjectPage(
-          type: user.id == myId ? 'me' : 'other',
+          myChurch: getMyChurch(user),
+          back: false,
+          type: widget.user.id == userBloc.outUserValue![myId]!.id
+              ? 'me'
+              : 'other',
           user: user,
         );
         break;
       case 'missionary':
-        object = ProfileMissionaryPage(
-          type: user.id == userBloc.outUserValue![myId]!.id ? 'me' : 'other',
+        categoryData = Missionary.fromJson(userdata);
+        object = ProfileProjectPage(
+          myChurch: false,
+          type: widget.user.id == userBloc.outUserValue![myId]!.id
+              ? 'me'
+              : 'other',
           user: user,
+        );
+        break;
+      case 'donor':
+        categoryData = Donor.fromJson(userdata);
+        object = DonorProfilePage(
+            user: user,
+            type: user.id == userBloc.outUserValue![myId]!.id ? 'me' : 'other');
+        break;
+      case 'church':
+        categoryData = Church.fromJson(userdata);
+        object = ChurchProfilePage(
+          first: true,
+          user: user,
+          type: user.id == userBloc.outUserValue![myId]!.id ? 'me' : 'other',
         );
         break;
       default:
         break;
     }
-
-    final value = object;
+    print("ITSS CATEGORYDATA $categoryData");
     addCategoryDataAndUser(user.id, categoryData, user);
-    print("valueNexPAge ${value}");
-    return value;
+    print("valueNexPAge ${object}");
+    return object;
   }
 
   void addCategoryDataAndUser(id, data, user) {

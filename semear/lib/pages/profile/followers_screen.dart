@@ -6,13 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:semear/apis/api_profile.dart';
 import 'package:semear/apis/api_settings.dart';
 import 'package:semear/blocs/followers_bloc.dart';
+import 'package:semear/blocs/profile_bloc.dart';
 import 'package:semear/blocs/settings_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
+import 'package:semear/models/church_model.dart';
+import 'package:semear/models/donor_model.dart';
+import 'package:semear/models/missionary_model..dart';
 import 'package:semear/models/project_model.dart';
 import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/church/church_profile_page.dart';
 import 'package:semear/pages/profile/donor/donor_profile_page.dart';
-import 'package:semear/pages/profile/missionary/missionary_profile_page.dart';
 import 'package:semear/pages/profile/project/project_profile_page.dart';
 import 'package:semear/widgets/button_filled.dart';
 
@@ -34,6 +37,8 @@ class _FollowersScreenState extends State<FollowersScreen> {
   final followerBloc = BlocProvider.getBloc<FollowersBloc>();
   final settings = ApiSettings();
   final userBloc = BlocProvider.getBloc<UserBloc>();
+  final profileBloc = BlocProvider.getBloc<ProfileBloc>();
+
   final settingBloc = BlocProvider.getBloc<SettingBloc>();
   int? myId;
 
@@ -159,6 +164,8 @@ class _FollowersScreenState extends State<FollowersScreen> {
                         if (snapshot.hasData) {
                           if (snapshot.data![widget.user.id!] != null ||
                               snapshot.data![widget.user.id]!.isNotEmpty) {
+                            print(
+                                'DATAAAAA ${snapshot.data![widget.user.id!]}');
                             return listFollowers(
                                 snapshot.data![widget.user.id!]);
                           } else {
@@ -208,7 +215,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
             separatorBuilder: (context, index) => const Divider(thickness: 1),
             itemCount: data.length,
             itemBuilder: (context, index) {
-              print("INDEC NUMBER: ${data[index]!.user!.id!}");
+              print("INDEC NUMBER: ${data[index].user2Data['id']}");
 
               return ListTile(
                 title: GestureDetector(
@@ -245,7 +252,9 @@ class _FollowersScreenState extends State<FollowersScreen> {
                     );
                   },
                   child: Text(
-                    data[index].user!.username,
+                    data[index].user.id == myId
+                        ? 'Você'
+                        : data[index].user!.username,
                     style: const TextStyle(
                         color: Colors.black, fontWeight: FontWeight.w600),
                   ),
@@ -257,19 +266,26 @@ class _FollowersScreenState extends State<FollowersScreen> {
                       height: 4,
                     ),
                     Text(
-                      category(data[index].user.category)!,
+                      category(data[index].user.category) ?? '',
                       style: const TextStyle(
                           color: Colors.green, fontWeight: FontWeight.w600),
                       textAlign: TextAlign.start,
                     )
                   ],
                 ),
-                leading: ClipOval(
-                  child: Image.asset(
-                    'assets/images/amigos.jpeg',
-                    alignment: Alignment.bottomLeft,
-                  ),
-                ),
+                leading: data[index].user.information.photoProfile != null
+                    ? ClipOval(
+                        child: Image.network(
+                          data[index]!.user!.information!.photoProfile ?? '',
+                          alignment: Alignment.bottomLeft,
+                        ),
+                      )
+                    : ClipOval(
+                        child: Image.asset(
+                          'assets/images/avatar.png',
+                          alignment: Alignment.bottomLeft,
+                        ),
+                      ),
                 trailing: Visibility(
                   visible: visibility(data[index]),
                   child: StreamBuilder<Map<int, Map<int, bool>>>(
@@ -302,7 +318,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                 ),
               );
             })
-        : Center(
+        : const Center(
             child: CircularProgressIndicator(color: Colors.green),
           );
   }
@@ -346,7 +362,9 @@ class _FollowersScreenState extends State<FollowersScreen> {
   }
 
   bool visibility(data) {
-    return userBloc.outUserValue![myId]!.id != data.user.id &&
+    return userBloc.outUserValue![userBloc.outMyIdValue]!.category !=
+            'anonymous' &&
+        userBloc.outUserValue![myId]!.id != data.user.id &&
         (data.user.category == 'project' || data.user.category == 'missionary');
   }
 
@@ -421,7 +439,16 @@ class _FollowersScreenState extends State<FollowersScreen> {
     return map[category];
   }
 
-  nextPage(category, user, userdata) {
+  bool getMyChurch(data) {
+    final id = userBloc.outMyIdValue;
+
+    if (userBloc.outUserValue![id]!.category == 'church') {
+      return profileBloc.outProjectsChurchValue![id]!.contains(data.id);
+    }
+    return false;
+  }
+
+  Widget nextPage(category, user, userdata) {
     print("ENTROU NEXTPAGE0");
     var categoryData = null;
     late final object;
@@ -430,25 +457,32 @@ class _FollowersScreenState extends State<FollowersScreen> {
       case 'project':
         categoryData = Project.fromJson(userdata);
         object = ProfileProjectPage(
+          myChurch: getMyChurch(user),
+          back: false,
           type: widget.user.id == userBloc.outUserValue![myId]!.id
               ? 'me'
               : 'other',
-          user: widget.user,
+          user: user,
         );
         break;
       case 'missionary':
-        object = ProfileMissionaryPage(
+        categoryData = Missionary.fromJson(userdata);
+        object = ProfileProjectPage(
+          myChurch: false,
           type: widget.user.id == userBloc.outUserValue![myId]!.id
               ? 'me'
               : 'other',
-          user: widget.user,
+          user: user,
         );
         break;
       case 'donor':
+        categoryData = Donor.fromJson(userdata);
         object = DonorProfilePage(
+            user: user,
             type: user.id == userBloc.outUserValue![myId]!.id ? 'me' : 'other');
         break;
       case 'church':
+        categoryData = Church.fromJson(userdata);
         object = ChurchProfilePage(
           first: true,
           user: user,
@@ -458,11 +492,10 @@ class _FollowersScreenState extends State<FollowersScreen> {
       default:
         break;
     }
-
-    final value = object;
+    print("ITSS CATEGORYDATA $categoryData");
     addCategoryDataAndUser(user.id, categoryData, user);
-    print("valueNexPAge ${value}");
-    return value;
+    print("valueNexPAge ${object}");
+    return object;
   }
 
   void addCategoryDataAndUser(id, data, user) {

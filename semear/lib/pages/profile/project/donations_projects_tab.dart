@@ -15,17 +15,13 @@ import 'package:semear/widgets/button_filled.dart';
 import 'package:semear/widgets/card_transaction.dart';
 
 class DonationsProject extends StatelessWidget {
-  DonationsProject(
-      {super.key,
-      required this.categoryData,
-      required this.user,
-      required this.type});
+  DonationsProject({super.key, required this.user, required this.type});
   String type;
   final userBloc = BlocProvider.getBloc<UserBloc>();
   final profileBloc = BlocProvider.getBloc<ProfileBloc>();
   User user;
   ApiProfile api = ApiProfile();
-  final categoryData;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -43,23 +39,28 @@ class DonationsProject extends StatelessWidget {
                   builder: (context, snapshot) {
                     return snapshot.data == null || snapshot.data == false
                         ? Expanded(child: SizedBox.shrink())
-                        : Container(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                            child: ButtonFilled(
-                                text: type == 'me'
-                                    ? 'Visualizar minhas doações'
-                                    : 'Fazer a minha doação',
-                                onClick: () {
-                                  type == 'me'
-                                      ? myDonatiosn(context)
-                                      : donation(context);
-                                }),
+                        : Visibility(
+                            visible: user.category != 'donor',
+                            child: Container(
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                              child: ButtonFilled(
+                                  text: type == 'me'
+                                      ? 'Visualizar minhas doações'
+                                      : 'Fazer a minha doação',
+                                  onClick: () {
+                                    type == 'me'
+                                        ? myDonatiosn(context)
+                                        : donation(context);
+                                  }),
+                            ),
                           );
                   }),
             ),
           ),
           SliverToBoxAdapter(child: SizedBox(height: 10)),
-          type == 'me' ? validations() : donations(),
+          type == 'me' && user.category != 'donor'
+              ? validations()
+              : donations(),
         ],
       ),
     );

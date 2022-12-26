@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:semear/apis/api_settings.dart';
@@ -89,6 +88,7 @@ class UserBloc extends BlocBase with LoginValidators {
   Future<Map<String, dynamic>> getCategoryData(method) async {
     http.Response response = await http.get(Uri.parse(
         "https://backend-semear.herokuapp.com/$method/api/${_myId.value}/get${method}Data/"));
+    print("GET CATEGORYYYY: ${jsonDecode(response.body)}");
     return jsonDecode(response.body);
   }
 
@@ -110,6 +110,7 @@ class UserBloc extends BlocBase with LoginValidators {
 
   Future<bool> verificarToken() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    //sharedPreferences.clear();
     if (sharedPreferences.getString('map') != null) {
       final decodedMap = json.decode(sharedPreferences.getString('map')!);
       final user = User.fromJson(decodedMap['user']);

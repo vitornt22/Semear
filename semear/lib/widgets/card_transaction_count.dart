@@ -10,7 +10,7 @@ class TopCard extends StatefulWidget {
     required this.icon,
   });
 
-  String number;
+  int? number;
   String text;
   IconData icon;
 
@@ -28,33 +28,38 @@ class _TopCardState extends State<TopCard> {
           color: const Color(0xffa23673A),
           child: SizedBox(
             height: 120,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 10, bottom: 3),
-                  child: Text(widget.number,
-                      style: const TextStyle(
-                          fontSize: 30,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700)),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    widget.text,
-                    style: const TextStyle(
-                        fontSize: 20,
+            child: widget.number == null
+                ? Center(
+                    child: CircularProgressIndicator(
+                    color: Colors.green,
+                  ))
+                : Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10, bottom: 3),
+                        child: Text('${widget.number}',
+                            style: const TextStyle(
+                                fontSize: 30,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Text(
+                          widget.text,
+                          style: const TextStyle(
+                              fontSize: 20,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w200),
+                        ),
+                      ),
+                      Icon(
+                        widget.icon,
+                        size: 40,
                         color: Colors.white,
-                        fontWeight: FontWeight.w200),
+                      ),
+                    ],
                   ),
-                ),
-                Icon(
-                  widget.icon,
-                  size: 40,
-                  color: Colors.white,
-                ),
-              ],
-            ),
           ),
         ),
       ),

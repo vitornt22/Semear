@@ -108,6 +108,7 @@ class _DonorRegisterState extends State<DonorRegister> {
                                   FieldClass(
                                       controller: emailController, id: 'email'),
                                   FormsField(
+                                    max: 15,
                                     keyboard: TextInputType.text,
                                     controller: usernameController,
                                     label: 'Nome de Usuário',

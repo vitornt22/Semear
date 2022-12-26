@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:semear/models/donation_model.dart';
 import 'package:photo_view/photo_view.dart';

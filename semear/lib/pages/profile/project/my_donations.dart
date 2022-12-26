@@ -93,22 +93,25 @@ class _MyDonationsState extends State<MyDonations>
             ? profileBloc.outDonationsValue
             : profileBloc.outSenderDonationsValue,
         builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data![widget.user.id] != null) {
-            return snapshot.data![widget.user.id]!.isEmpty
-                ? text(category)
-                : ListView.builder(
-                    itemCount: snapshot.data![widget.user.id]!.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return CardTransaction(
-                          origin: origin,
-                          donation: snapshot.data![widget.user.id]![index]);
-                    });
+          if (snapshot.hasData) {
+            if (snapshot.data![widget.user.id]!.isNotEmpty) {
+              return ListView.builder(
+                  itemCount: snapshot.data![widget.user.id]!.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return CardTransaction(
+                        origin: origin,
+                        donation: snapshot.data![widget.user.id]![index]);
+                  });
+            } else {
+              return text(category);
+            }
+            return CircularProgressIndicator(color: Colors.green);
+          } else {
+            category
+                ? profileBloc.addDonations(widget.user.id, null)
+                : profileBloc.addSenderDonations(widget.user.id, null);
+            return CircularProgressIndicator(color: Colors.green);
           }
-          return const Center(
-            child: SizedBox(
-              child: CircularProgressIndicator(color: Colors.green),
-            ),
-          );
         });
   }
 

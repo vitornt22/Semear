@@ -1,12 +1,16 @@
 // ignore_for_file: prefer_const_constructors, use_full_hex_values_for_flutter_colors
 
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
+import 'package:semear/blocs/user_bloc.dart';
+import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/home_screen.dart';
 import 'package:semear/pages/login_page.dart';
 import 'package:semear/pages/register/register_type.dart';
 
 class InitialPage extends StatelessWidget {
-  const InitialPage({super.key});
+  InitialPage({super.key});
+  final userBloc = BlocProvider.getBloc<UserBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -99,9 +103,13 @@ class InitialPage extends StatelessWidget {
                       shape: StadiumBorder(),
                       backgroundColor: Color.fromARGB(255, 0, 93, 3),
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
+                    onPressed: () async {
+                      final navigator = Navigator.of(context);
+                      userBloc.inMyId.add(0);
+                      final user = User(id: 0, category: 'anonymous');
+                      print("FINAL USER ${user.category}");
+                      await userBloc.addUser(user);
+                      navigator.push(
                         MaterialPageRoute(
                           builder: (context) {
                             return HomeScreen(

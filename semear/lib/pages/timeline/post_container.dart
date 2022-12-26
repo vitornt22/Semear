@@ -2,11 +2,15 @@
 
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
+import 'package:semear/apis/api_profile.dart';
 import 'package:semear/apis/api_publication.dart';
+import 'package:semear/blocs/profile_bloc.dart';
 import 'package:semear/blocs/publications_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/publication_model.dart';
+import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/profile/project/project_profile_page.dart';
+import 'package:semear/pages/register/register_type.dart';
 import 'package:semear/pages/timeline/my_post_settings.dart';
 import 'package:semear/pages/timeline/post_settings.dart';
 import 'package:semear/pages/timeline/comments.dart';
@@ -32,8 +36,14 @@ class PostContainer extends StatefulWidget {
 class _PostContainerState extends State<PostContainer> {
   final pubBloc = BlocProvider.getBloc<PublicationsBloc>();
   final userBloc = BlocProvider.getBloc<UserBloc>();
+  final profileBloc = BlocProvider.getBloc<ProfileBloc>();
+
   ApiPublication api = ApiPublication();
+  ApiProfile apiProfile = ApiProfile();
+
   int? myId;
+  User? myUser;
+  var categoryData;
 
   @override
   void dispose() {
@@ -52,6 +62,9 @@ class _PostContainerState extends State<PostContainer> {
     pubBloc.toggleNumberLikes(widget.publication);
     pubBloc.toogleNumberComments(widget.publication);
     myId = userBloc.outMyIdValue;
+    myUser = userBloc.outUserValue![myId];
+    categoryData = userBloc.outCategoryValue![myId];
+
     print("MYID $myId");
     // widget.publication.likes!.any((element) => element.user== userBloc.outUserValue![myId]!.id)? pubBloc.toggleLabel(widget.publication.id!,  label)
   }
@@ -155,7 +168,35 @@ class _PostContainerState extends State<PostContainer> {
                         ),
                       ),
                       SizedBox(width: 20),
-                      Text('345 indicações'),
+                      Row(
+                        children: [
+                          StreamBuilder<Map<int, int>>(
+                              stream: profileBloc.outNumberRecommendations,
+                              initialData:
+                                  profileBloc.outNumberRecommendationValue,
+                              builder: (context, snapshot) {
+                                getNumberRecommendation();
+
+                                if (snapshot.hasData) {
+                                  if (snapshot
+                                          .data![widget.publication.user!.id] !=
+                                      null) {
+                                    return Text(
+                                        '${snapshot.data![widget.publication.user!.id]}');
+                                  }
+                                }
+
+                                return SizedBox(
+                                  width: 10,
+                                  height: 10,
+                                  child: CircularProgressIndicator(
+                                      color: Colors.green),
+                                );
+                              }),
+                          SizedBox(width: 2),
+                          Text('indicações'),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -175,57 +216,60 @@ class _PostContainerState extends State<PostContainer> {
                           stream: pubBloc.outDisabled,
                           initialData: false,
                           builder: (c, s) => TextButton.icon(
-                            onPressed: s.data!
-                                ? null
-                                : () async {
-                                    pubBloc.inDisabled.add(true);
-                                    final value;
-                                    String label = await api.getLabel(
-                                        userBloc.outUserValue![myId]!.id,
-                                        widget.publication.id);
-                                    pubBloc.toggleLabel(
-                                        userBloc.outUserValue![myId]!.id!,
-                                        label);
-                                    //If current user are inside list of like followers
-                                    if (label == "Curtir") {
-                                      value = await api.setLike(
-                                          userBloc.outUserValue![myId]!.id,
-                                          widget.publication.id);
+                            onPressed:
+                                s.data! || myUser!.category == 'anonymous'
+                                    ? null
+                                    : () async {
+                                        pubBloc.inDisabled.add(true);
+                                        final value;
+                                        String label = await api.getLabel(
+                                            userBloc.outUserValue![myId]!.id,
+                                            widget.publication.id);
+                                        pubBloc.toggleLabel(
+                                            userBloc.outUserValue![myId]!.id!,
+                                            label);
+                                        //If current user are inside list of like followers
+                                        if (label == "Curtir") {
+                                          value = await api.setLike(
+                                              userBloc.outUserValue![myId]!.id,
+                                              widget.publication.id);
 
-                                      label = 'Descurtir';
-                                    } else {
-                                      print("ENTROU EM TRUE");
-                                      value = await api.deleteLike(
-                                          userBloc.outUserValue![myId]!.id,
-                                          widget.publication.id);
-                                      label = 'Curtir';
-                                    }
-                                    if (value != null) {
-                                      print("NEW LISTA ${value.id}");
+                                          label = 'Descurtir';
+                                        } else {
+                                          print("ENTROU EM TRUE");
+                                          value = await api.deleteLike(
+                                              userBloc.outUserValue![myId]!.id,
+                                              widget.publication.id);
+                                          label = 'Curtir';
+                                        }
+                                        if (value != null) {
+                                          print("NEW LISTA ${value.id}");
 
-                                      pubBloc.toggleNumberLikes(value);
-                                      pubBloc.toggleLabel(
-                                          widget.publication.id!, label);
-                                      pubBloc.inDisabled.add(false);
+                                          pubBloc.toggleNumberLikes(value);
+                                          pubBloc.toggleLabel(
+                                              widget.publication.id!, label);
+                                          pubBloc.inDisabled.add(false);
 
-                                      pubBloc.changeListPublication(
-                                          widget.index!, value);
-                                    }
-                                    pubBloc.inDisabled.add(false);
-                                  },
-                            label: StreamBuilder<Map<int, String>>(
-                              stream: pubBloc.outLabel,
-                              builder: (context, s) => s.hasData
-                                  ? Text(
-                                      '${s.data![widget.publication.id]}',
-                                      // ignore: use_full_hex_values_for_flutter_colors
-                                      style:
-                                          TextStyle(color: Color(0xffb23673a)),
-                                    )
-                                  : CircularProgressIndicator(
-                                      color: Colors.green,
-                                    ),
-                            ),
+                                          pubBloc.changeListPublication(
+                                              widget.index!, value);
+                                        }
+                                        pubBloc.inDisabled.add(false);
+                                      },
+                            label: myUser!.category == 'anonymous'
+                                ? Text('Curtir')
+                                : StreamBuilder<Map<int, String>>(
+                                    stream: pubBloc.outLabel,
+                                    builder: (context, s) => s.hasData
+                                        ? Text(
+                                            '${s.data![widget.publication.id]}',
+                                            // ignore: use_full_hex_values_for_flutter_colors
+                                            style: TextStyle(
+                                                color: Color(0xffb23673a)),
+                                          )
+                                        : CircularProgressIndicator(
+                                            color: Colors.green,
+                                          ),
+                                  ),
                             icon: const Icon(
                               Icons.favorite,
                               // ignore: use_full_hex_values_for_flutter_colors
@@ -237,17 +281,19 @@ class _PostContainerState extends State<PostContainer> {
                       Expanded(
                         child: TextButton.icon(
                           onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (context) {
-                                return Comments(
-                                  index: widget.index,
-                                  focus: true,
-                                  publication: widget.publication,
-                                );
-                              },
-                              isScrollControlled: true,
-                            );
+                            myUser!.category == 'anonymous'
+                                ? modalRegister(context)
+                                : showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) {
+                                      return Comments(
+                                        index: widget.index,
+                                        focus: true,
+                                        publication: widget.publication,
+                                      );
+                                    },
+                                    isScrollControlled: true,
+                                  );
                           },
                           label: const Text(
                             'Comentar',
@@ -261,16 +307,27 @@ class _PostContainerState extends State<PostContainer> {
                           ),
                         ),
                       ),
-                      TextButton.icon(
-                        onPressed: () {},
-                        label: const Text('Indicar',
-                            // ignore: use_full_hex_values_for_flutter_colors
-                            style: TextStyle(color: Color(0xffb23673a))),
-                        icon: const Icon(
-                          Icons.share_sharp,
-                          // ignore: use_full_hex_values_for_flutter_colors
-                          color: Color(0xffb23673a),
-                        ),
+                      StreamBuilder<Map<int, bool>>(
+                        stream: profileBloc.outRecommndation,
+                        initialData: profileBloc.outRecommndationValue,
+                        builder: (context, snapshot) {
+                          checkRecommendation();
+
+                          if (snapshot.hasData) {
+                            final idhere = widget.publication.user!.id;
+                            final data =
+                                snapshot.data![widget.publication.user!.id];
+
+                            if (data == true) {
+                              return textButton('Indicado', Icons.check, () {});
+                            } else if (data == false) {
+                              return textButton(
+                                  'Indicar', Icons.recommend, setRecommend);
+                            }
+                          }
+
+                          return circular();
+                        },
                       ),
                     ],
                   ),
@@ -285,6 +342,84 @@ class _PostContainerState extends State<PostContainer> {
     );
   }
 
+  modalRegister(context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Para ter acesso ao chat é necessárip se registrar'),
+        content: Text('Deseja se Registrar?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('Não'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => RegisterType()));
+            },
+            child: Text('Quero me registrar'),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget circular() {
+    return SizedBox(
+      width: 10,
+      height: 10,
+      child: CircularProgressIndicator(
+        color: Colors.green,
+      ),
+    );
+  }
+
+  setRecommend() async {
+    profileBloc.addLoadingRecommendation(widget.publication.user!.id, true);
+    await apiProfile
+        .setRecommend(myId, widget.publication.user!.id)
+        .then((value) {
+      profileBloc.addRecommendation(widget.publication.user!.id, value);
+      if (value == true) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Projeto indicado'),
+          backgroundColor: Colors.green,
+        ));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Erro ao indicar indicado'),
+          backgroundColor: Colors.redAccent,
+        ));
+      }
+    });
+    profileBloc.addLoadingRecommendation(widget.publication.user!.id, false);
+  }
+
+  Widget textButton(label, icon, onPressed) {
+    profileBloc.addLoadingRecommendation(widget.publication.user!.id, false);
+    return StreamBuilder<Map<int, bool>>(
+        stream: profileBloc.outLoadingRecommendation,
+        initialData: profileBloc.outLoadingRecommendationValue,
+        builder: (context, snapshot) {
+          return snapshot.data![widget.publication.user!.id] == true
+              ? circular()
+              : TextButton.icon(
+                  onPressed: onPressed,
+                  label: Text(label,
+                      // ignore: use_full_hex_values_for_flutter_colors
+                      style: TextStyle(color: Color(0xffb23673a))),
+                  icon: Icon(
+                    icon,
+                    // ignore: use_full_hex_values_for_flutter_colors
+                    color: Color(0xffb23673a),
+                  ),
+                );
+        });
+  }
+
   Widget headPost() {
     return Row(
       children: [
@@ -293,13 +428,8 @@ class _PostContainerState extends State<PostContainer> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(100),
             child: CircleAvatar(
-              maxRadius: 30,
-              child: Image.network(
-                widget.publication.user!.information!.photoProfile ??
-                    'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-                fit: BoxFit.fill,
-              ),
-            ),
+                maxRadius: 30,
+                child: getImage(widget.publication.user!.information)),
           ),
         ),
         const SizedBox(
@@ -313,40 +443,49 @@ class _PostContainerState extends State<PostContainer> {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      addCategoryAndUser(
-                          widget.publication.user!.id,
-                          widget.publication.user!.category == 'project'
-                              ? widget.publication.project
-                              : widget.publication.missionary,
-                          widget.publication.user);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          settings: RouteSettings(),
-                          builder: (context) => Scaffold(
-                            body: Scaffold(
-                                bottomSheet: Container(
-                                  color: Colors.white,
-                                  width: double.infinity,
-                                  height: 80,
-                                  child: ButtonFilled(
-                                    text: "Voltar ao  inicio",
-                                    onClick: () {
-                                      Navigator.of(context).popUntil(
-                                          (route) => route.isFirst == true);
-                                    },
+                    onTap: () async {
+                      late final myChurch;
+                      await getMyChurch(widget.publication.user)
+                          .then((value) => myChurch = value);
+
+                      final navigator = Navigator.of(context);
+                      if (myUser!.category == 'church' &&
+                          profileBloc.outProjectsChurchValue == null) {
+                      } else {
+                        addCategoryAndUser(
+                            widget.publication.user!.id,
+                            widget.publication.user!.category == 'project'
+                                ? widget.publication.project
+                                : widget.publication.missionary,
+                            widget.publication.user);
+                        navigator.push(
+                          MaterialPageRoute(
+                            settings: RouteSettings(),
+                            builder: (context) => Scaffold(
+                              body: Scaffold(
+                                  bottomSheet: Container(
+                                    color: Colors.white,
+                                    width: double.infinity,
+                                    height: 80,
+                                    child: ButtonFilled(
+                                      text: "Voltar ao  inicio",
+                                      onClick: () {
+                                        Navigator.of(context).popUntil(
+                                            (route) => route.isFirst == true);
+                                      },
+                                    ),
                                   ),
-                                ),
-                                body: ProfileProjectPage(
-                                    user: widget.publication.user!,
-                                    type: widget.publication.user!.id ==
-                                            userBloc.outUserValue![myId]!.id
-                                        ? 'me'
-                                        : 'other')),
+                                  body: ProfileProjectPage(
+                                      myChurch: myChurch,
+                                      user: widget.publication.user!,
+                                      type: widget.publication.user!.id ==
+                                              userBloc.outUserValue![myId]!.id
+                                          ? 'me'
+                                          : 'other')),
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
                     },
                     child: Text(
                       widget.publication.user!.username!,
@@ -372,10 +511,13 @@ class _PostContainerState extends State<PostContainer> {
                   const SizedBox(
                     width: 8,
                   ),
-                  Text(
-                    widget.publication.createdAt!,
-                    style: TextStyle(
-                      color: Colors.grey[600],
+                  Expanded(
+                    child: Text(
+                      widget.publication.createdAt!,
+                      maxLines: 10,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                      ),
                     ),
                   ),
                 ],
@@ -393,8 +535,46 @@ class _PostContainerState extends State<PostContainer> {
     );
   }
 
+  Future<bool> getMyChurch(data) async {
+    final id = userBloc.outMyIdValue;
+
+    if (userBloc.outUserValue![id]!.category == 'church') {
+      final categoryData = profileBloc.outProjectsChurchValue![id]!;
+      return categoryData != null && categoryData.contains(data.id);
+    }
+    return false;
+  }
+
+  getImage(information) {
+    if (information != null) {
+      if (information.photoProfile != null) {
+        return Image.network(
+          information.photoProfile ??
+              'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+          fit: BoxFit.fill,
+        );
+      }
+    }
+
+    return Image.asset('assets/images/avatar.png');
+  }
+
   addCategoryAndUser(id, data, user) {
     userBloc.addCategory(id, data);
     userBloc.addUser(user);
+  }
+
+  getNumberRecommendation() async {
+    final thisId = widget.publication.user!.id;
+    await apiProfile
+        .getNumberRecommendation(thisId)
+        .then((value) => profileBloc.addNumberRecommendations(thisId, value));
+  }
+
+  checkRecommendation() async {
+    final thisId = widget.publication.user!.id;
+    apiProfile
+        .checkRecommendation(myId, thisId)
+        .then((value) => profileBloc.addRecommendation(thisId, value));
   }
 }

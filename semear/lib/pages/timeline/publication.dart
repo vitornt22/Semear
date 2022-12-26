@@ -8,13 +8,16 @@ import 'package:rxdart/rxdart.dart';
 import 'package:semear/apis/api_form_validation.dart';
 import 'package:semear/blocs/publication_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
+import 'package:semear/models/user_model.dart';
 import 'package:semear/pages/timeline/Image_source_sheet.dart';
 import 'package:semear/validators/publication_validation.dart';
 
 import 'package:dropdown_plus/dropdown_plus.dart';
 
 class PublicationPage extends StatefulWidget with PublicationValidator {
-  PublicationPage({super.key});
+  PublicationPage({super.key, required this.user});
+
+  User user;
 
   @override
   State<PublicationPage> createState() => _PublicationPageState();
@@ -22,6 +25,7 @@ class PublicationPage extends StatefulWidget with PublicationValidator {
 
 class _PublicationPageState extends State<PublicationPage> {
   ApiForm apiForm = ApiForm();
+  User? user;
 
   final _formkey = GlobalKey<FormState>();
 
@@ -30,8 +34,20 @@ class _PublicationPageState extends State<PublicationPage> {
   final _imageController = BehaviorSubject<File?>();
 
   File? imagem;
+  final userBloc = BlocProvider.getBloc<UserBloc>();
+  var categoryData;
 
   final PublicationBloc _pubBloc = BlocProvider.getBloc<PublicationBloc>();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _pubBloc.inImage.add(null);
+    _pubBloc.inLoading.add(false);
+    user = widget.user;
+    categoryData = userBloc.outCategoryValue![widget.user.id];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +74,7 @@ class _PublicationPageState extends State<PublicationPage> {
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    categoryText(),
                     SizedBox(height: 30),
                     GestureDetector(
                       onTap: () {
@@ -219,15 +236,24 @@ class _PublicationPageState extends State<PublicationPage> {
     );
   }
 
+  Widget categoryText() {
+    final category =
+        widget.user.category == 'project' ? 'Projeto' : 'Missionário';
+    final name = widget.user.category == 'project'
+        ? categoryData.name
+        : categoryData.fullName;
+    return Text('$category :$name');
+  }
+
   void savePublication(context) async {
     if (_formkey.currentState!.validate()) {
       await BlocProvider.getBloc<UserBloc>().verificarToken();
 
-      bool success = await _pubBloc.submit();
+      bool success = await _pubBloc.submit(user!.id);
       if (success == true) {
         ScaffoldMessenger.of(context).showSnackBar(snackBarSuccess);
 
-        Navigator.of(context).pop();
+        Navigator.of(context).popUntil((route) => route.isFirst == true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(snackBarError);
       }

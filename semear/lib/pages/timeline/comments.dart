@@ -3,14 +3,15 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
 import 'package:semear/apis/api_publication.dart';
+import 'package:semear/blocs/profile_bloc.dart';
 import 'package:semear/blocs/publications_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
 import 'package:semear/models/publication_model.dart';
 import 'package:semear/pages/profile/church/church_profile_page.dart';
 import 'package:semear/pages/profile/donor/donor_profile_page.dart';
-import 'package:semear/pages/profile/missionary/missionary_profile_page.dart';
 import 'package:semear/pages/profile/project/project_profile_page.dart';
 import 'package:path/path.dart';
+import 'package:semear/pages/register/register_type.dart';
 
 class Comments extends StatefulWidget {
   Comments(
@@ -25,6 +26,8 @@ class Comments extends StatefulWidget {
 
 class _CommentsState extends State<Comments> {
   final userBloc = BlocProvider.getBloc<UserBloc>();
+  final profileBloc = BlocProvider.getBloc<ProfileBloc>();
+
   final pubBloc = BlocProvider.getBloc<PublicationsBloc>();
   ApiPublication api = ApiPublication();
   int? myId;
@@ -47,7 +50,19 @@ class _CommentsState extends State<Comments> {
       child: FractionallySizedBox(
         heightFactor: 0.97,
         child: Scaffold(
-          bottomSheet: bottomSheetComments(),
+          bottomSheet: userBloc.outUserValue![myId]!.category == 'anonymous'
+              ? Expanded(
+                  child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => RegisterType()));
+                  },
+                  child: Text(
+                      'Para comentar nas publicações, é necessários se registrar'),
+                ))
+              : bottomSheetComments(),
           body: CustomScrollView(
             slivers: [
               SliverAppBar(
@@ -74,109 +89,127 @@ class _CommentsState extends State<Comments> {
                     icon: const Icon(Icons.arrow_back)),
               ),
               StreamBuilder<Map<int, dynamic>>(
-                stream: pubBloc.outComments,
-                initialData: pubBloc.outCommentsValue,
-                builder: (context, snapshot) => snapshot.hasData
-                    ? SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (BuildContext context, int index) {
-                            print(
-                                "OLHA ${snapshot.data![widget.publication.id].length}");
-                            int len =
-                                snapshot.data![widget.publication.id].length;
-                            if (index <= len) {
-                              return Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Column(
-                                  children: [
-                                    ListTile(
-                                      title: GestureDetector(
-                                        onTap: () {
-                                          return onTap(
+                  stream: pubBloc.outComments,
+                  initialData: pubBloc.outCommentsValue,
+                  builder: (context, snapshot) {
+                    updateComments();
+                    return snapshot.hasData
+                        ? SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (BuildContext context, int index) {
+                                final data = snapshot
+                                    .data![widget.publication.id][index];
+                                addCategoryDataUser(data.user, data.userData);
+
+                                print(
+                                    "OLHA ${snapshot.data![widget.publication.id].length}");
+                                int len = snapshot
+                                    .data![widget.publication.id].length;
+                                if (index <= len) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Column(
+                                      children: [
+                                        ListTile(
+                                          title: GestureDetector(
+                                            onTap: () {
+                                              return onTap(data.user, context);
+                                            },
+                                            child: Text(
                                               snapshot
                                                   .data![widget.publication.id]
                                                       [index]
                                                   .user
-                                                  .category,
-                                              context);
-                                        },
-                                        child: Text(
-                                          snapshot
-                                              .data![widget.publication.id]
-                                                  [index]
-                                              .user
-                                              .username!,
-                                          style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              '${snapshot.data![widget.publication.id][index].comment}'),
-                                          SizedBox(
-                                            height: 4,
+                                                  .username!,
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w600),
+                                            ),
                                           ),
-                                          Text(
-                                            'Há ${snapshot.data![widget.publication.id][index].createdAt}',
-                                            style: TextStyle(
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w400),
-                                            textAlign: TextAlign.start,
-                                          )
-                                        ],
-                                      ),
-                                      trailing: snapshot
-                                                  .data![widget.publication.id]
-                                                      [index]
-                                                  .user
-                                                  .id ==
-                                              userBloc.outUserValue![myId]!.id
-                                          ? IconButton(
-                                              onPressed: () async {
-                                                final id = snapshot
-                                                    .data![widget
-                                                        .publication.id][index]
-                                                    .id;
-                                                print(
-                                                    'ID DO COMENTARIO: ${snapshot.data![widget.publication.id][index].id}');
-                                                final value =
-                                                    await api.deleteComment(id,
-                                                        widget.publication.id);
-                                                if (value != null) {
-                                                  updateComments();
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                          snackBarCommentDeleteSuccess);
-                                                } else {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                          snackBarCommentDeleteError);
-                                                }
-                                              },
-                                              icon: Icon(Icons.delete))
-                                          : null,
-                                      leading: ClipOval(
-                                          child: Image(
-                                        image: NetworkImage(widget.publication
-                                            .user!.information!.photoProfile!),
-                                      )),
+                                          subtitle: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                  '${snapshot.data![widget.publication.id][index].comment}'),
+                                              SizedBox(
+                                                height: 4,
+                                              ),
+                                              Text(
+                                                'Há ${snapshot.data![widget.publication.id][index].createdAt}',
+                                                style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontWeight:
+                                                        FontWeight.w400),
+                                                textAlign: TextAlign.start,
+                                              )
+                                            ],
+                                          ),
+                                          trailing: snapshot
+                                                      .data![widget.publication
+                                                          .id][index]
+                                                      .user
+                                                      .id ==
+                                                  userBloc
+                                                      .outUserValue![myId]!.id
+                                              ? IconButton(
+                                                  onPressed: () async {
+                                                    final id = snapshot
+                                                        .data![widget
+                                                            .publication
+                                                            .id][index]
+                                                        .id;
+                                                    print(
+                                                        'ID DO COMENTARIO: ${snapshot.data![widget.publication.id][index].id}');
+                                                    final value =
+                                                        await api.deleteComment(
+                                                            id,
+                                                            widget.publication
+                                                                .id);
+                                                    if (value != null) {
+                                                      updateComments();
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                              snackBarCommentDeleteSuccess);
+                                                    } else {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                              snackBarCommentDeleteError);
+                                                    }
+                                                  },
+                                                  icon: Icon(Icons.delete))
+                                              : null,
+                                          leading: ClipOval(
+                                            child: widget
+                                                        .publication
+                                                        .user!
+                                                        .information!
+                                                        .photoProfile !=
+                                                    null
+                                                ? Image(
+                                                    image: NetworkImage(widget
+                                                        .publication
+                                                        .user!
+                                                        .information!
+                                                        .photoProfile!))
+                                                : Image.asset(
+                                                    'assets/images/avatar.png'),
+                                          ),
+                                        ),
+                                        Divider()
+                                      ],
                                     ),
-                                    Divider()
-                                  ],
-                                ),
-                              );
-                            }
-                          },
-                          childCount:
-                              snapshot.data![widget.publication.id].length,
-                        ),
-                      )
-                    : Text('Não há comentários nessa postagem'),
-              ),
+                                  );
+                                }
+                              },
+                              childCount:
+                                  snapshot.data![widget.publication.id].length,
+                            ),
+                          )
+                        : Text('Não há comentários nessa postagem');
+                  }),
               SliverToBoxAdapter(
                 child: Container(height: 80),
               )
@@ -198,19 +231,20 @@ class _CommentsState extends State<Comments> {
     print("VALOR DE A TESTE: ${pubBloc.outComments}");
   }
 
-  void onTap(category, context) {
-    print("CATEGORY $category");
+  void onTap(user, context) {
+    final category = user.category;
+    print("CATEGORY $user");
+    String type = userBloc.outMyIdValue == user.id ? 'me' : 'other';
 
     final mapCategory = {
-      'church': ChurchProfilePage(
-          first: false, type: 'other', user: widget.publication.user!),
-      'project':
-          ProfileProjectPage(type: 'other', user: widget.publication.user!),
-      'missionary': ProfileMissionaryPage(
-        user: widget.publication.user!,
-        type: 'other',
-      ),
-      'donor': DonorProfilePage(type: 'other')
+      'church': ChurchProfilePage(first: false, type: type, user: user),
+      'project': ProfileProjectPage(
+          myChurch: getMyChurch(user), back: false, type: type, user: user),
+      'missionary': ProfileProjectPage(myChurch: false, type: type, user: user),
+      'donor': DonorProfilePage(
+        user: user,
+        type: type,
+      )
     };
     Navigator.push(
         context,
@@ -224,6 +258,20 @@ class _CommentsState extends State<Comments> {
     setState(() {
       heigth = text.isEmpty ? 80 : 80 + (text.length / 34) * 15;
     });
+  }
+
+  void addCategoryDataUser(user, data) {
+    userBloc.addCategory(user.id, data);
+    userBloc.addUser(user);
+  }
+
+  bool getMyChurch(data) {
+    final id = userBloc.outMyIdValue;
+
+    if (userBloc.outUserValue![id]!.category == 'church') {
+      return profileBloc.outProjectsChurchValue![id]!.contains(data.id);
+    }
+    return false;
   }
 
   Widget bottomSheetComments() {

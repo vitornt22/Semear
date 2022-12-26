@@ -8,25 +8,28 @@ import 'package:flutter/material.dart';
 import 'package:semear/apis/api_form_validation.dart';
 import 'package:semear/blocs/edit_profile_bloc.dart';
 import 'package:semear/blocs/user_bloc.dart';
+import 'package:semear/models/donor_model.dart';
 import 'package:semear/models/user_model.dart';
 import 'package:http/http.dart' as http;
 
 class EditAccount extends StatefulWidget {
-  EditAccount({super.key, required this.user});
+  EditAccount({super.key, required this.idCategory, required this.user});
 
   User user;
-
+  int? idCategory;
   @override
   State<EditAccount> createState() => _EditAccountState();
 }
 
 class _EditAccountState extends State<EditAccount> {
+  TextEditingController nameController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController codeController = TextEditingController();
   TextEditingController passwordSaves = TextEditingController();
+  final userBloc = BlocProvider.getBloc<UserBloc>();
 
   String? saveEmail, saveUsername;
 
@@ -34,7 +37,6 @@ class _EditAccountState extends State<EditAccount> {
   ApiForm apiForm = ApiForm();
 
   final editBloc = EditProfileBloc();
-  final userBloc = BlocProvider.getBloc<UserBloc>();
   late Future<Map<String, dynamic>> cep;
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -46,9 +48,14 @@ class _EditAccountState extends State<EditAccount> {
     // TODO: implement initState
     super.initState();
     passwordSaves.text = '';
-    emailController.text = userBloc.outUserValue![widget.user.id]!.email!;
+    emailController.text = userBloc.outUserValue![widget.user.id]!.email ?? '';
     editBloc.inStatus.add(false);
-    usernameController.text = userBloc.outUserValue![widget.user.id]!.username!;
+    usernameController.text =
+        userBloc.outUserValue![widget.user.id]!.username ?? '';
+    if (widget.user.category == 'donor') {
+      nameController.text =
+          userBloc.outCategoryValue![widget.user.id].fullName ?? '';
+    }
   }
 
   @override
@@ -80,6 +87,7 @@ class _EditAccountState extends State<EditAccount> {
               padding: EdgeInsets.only(right: 10),
               child: IconButton(
                   onPressed: () {
+                    final scafolld = ScaffoldMessenger.of(context);
                     if (formKey.currentState!.validate()) {
                       showDialog(
                           context: context,
@@ -96,23 +104,30 @@ class _EditAccountState extends State<EditAccount> {
                                   TextButton(
                                     onPressed: () async {
                                       final navigator = Navigator.of(context);
-                                      final scafolld =
-                                          ScaffoldMessenger.of(context);
+
                                       editBloc.inLoading.add(true);
                                       final a = await submit();
+                                      final b = widget.user.category == 'donor'
+                                          ? await submitFullName()
+                                          : 'notNull';
+
                                       editBloc.inLoading.add(false);
-                                      if (a != null) {
+                                      if (a != null && b != null) {
                                         navigator.popUntil(
                                             (route) => route.isFirst == true);
                                         scafolld.showSnackBar(snackBar(
                                             'Dados alterados!', 'success'));
-                                        userBloc.updateUser(a);
-                                        userBloc.updatePasswordOrEmail(
-                                            'email', emailController.text);
+                                        userBloc.addUser(a);
+                                        if (widget.user.id ==
+                                            userBloc.outMyId) {
+                                          userBloc.updateUser(a);
+                                          userBloc.updatePasswordOrEmail(
+                                              'email', emailController.text);
+                                        }
                                       } else {
                                         navigator.pop();
                                         scafolld.showSnackBar(snackBar(
-                                            'Dados alterados!', 'error'));
+                                            'Erro ao alterar!', 'error'));
                                       }
                                     },
                                     child: const Text('Alterar'),
@@ -120,6 +135,9 @@ class _EditAccountState extends State<EditAccount> {
                                 ],
                               ));
                       submit();
+                    } else {
+                      scafolld.showSnackBar(
+                          snackBar('Preencha todos os campos', 'error'));
                     }
                   },
                   icon: Icon(Icons.check)),
@@ -144,21 +162,24 @@ class _EditAccountState extends State<EditAccount> {
                 child: Column(
                   children: [
                     SizedBox(height: 100),
+                    Visibility(
+                      visible: widget.user.category == 'donor',
+                      child: field('Nome Completo', nameController, null,
+                          checkFullNameField, 80),
+                    ),
                     StreamBuilder<bool?>(
                         stream: editBloc.outCheckUsername,
                         initialData: editBloc.outCheckUsernameValue,
                         builder: (context, snapshot) {
-                          return field(
-                            'Username',
-                            usernameController,
-                            snapshot,
-                          );
+                          return field('Username', usernameController, snapshot,
+                              checkUsernameField, 15);
                         }),
                     StreamBuilder<bool?>(
                         stream: editBloc.outCheckEmail,
                         initialData: editBloc.outCheckEmailValue,
                         builder: (context, snapshot) {
-                          return field('Email', emailController, snapshot);
+                          return field('Email', emailController, snapshot,
+                              checkEmailField, 100);
                         }),
                   ],
                 ),
@@ -311,9 +332,12 @@ class _EditAccountState extends State<EditAccount> {
               User? value = await changePassword();
               editBloc.inLoading.add(false);
               if (value != null) {
-                userBloc.updateUser(value);
-                userBloc.updatePasswordOrEmail('password', passwordSaves.text);
-
+                if (widget.user.id == userBloc.outMyId) {
+                  userBloc.updateUser(value);
+                  userBloc.updatePasswordOrEmail(
+                      'password', passwordSaves.text);
+                }
+                userBloc.addUser(value);
                 navigator.pop();
                 scafolld.showSnackBar(
                     snackBar('Senha Alterada com Sucesso', 'success'));
@@ -346,6 +370,13 @@ class _EditAccountState extends State<EditAccount> {
       return 'Email invalido';
     } else if (editBloc.outCheckEmailValue == true) {
       return 'Email já existe, tente outro';
+    }
+    return null;
+  }
+
+  String? checkFullNameField(String? text) {
+    if (text == null || text.isEmpty) {
+      return 'Campo Obrigatório';
     }
     return null;
   }
@@ -459,7 +490,7 @@ class _EditAccountState extends State<EditAccount> {
     );
   }
 
-  Widget field(text, controller, snapshot) {
+  Widget field(text, controller, snapshot, validator, max) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Wrap(children: [
@@ -468,16 +499,20 @@ class _EditAccountState extends State<EditAccount> {
           style: TextStyle(color: Colors.green),
         ),
         TextFormField(
-          validator: text == 'Email' ? checkEmailField : checkUsernameField,
+          validator: validator,
           enabled: true,
           controller: controller,
           minLines: 1,
           maxLines: 10,
+          maxLength: max,
           decoration: InputDecoration(
-            suffix: getSuffix(text, snapshot, controller),
+            suffix:
+                snapshot != null ? getSuffix(text, snapshot, controller) : null,
           ),
           onChanged: (value) {
-            changeChecked(value, snapshot, text);
+            if (snapshot != null) {
+              changeChecked(value, snapshot, text);
+            }
           },
         ),
       ]),
@@ -517,11 +552,41 @@ class _EditAccountState extends State<EditAccount> {
   Future<User?> submit() async {
     //var image = await imagem.readAsBytes();
     final jsonStr = {
-      "id": widget.user.id.toString(),
       "username": usernameController.text,
       "email": emailController.text,
     };
 
     return await returnFunction(jsonEncode(jsonStr));
+  }
+
+  Future<Donor?> submitFullName() async {
+    //var image = await imagem.readAsBytes();
+    final jsonStr = {
+      "fullName": nameController.text,
+    };
+
+    print("CATEGOYRRRR ${widget.idCategory}");
+
+    final response = await http.patch(
+      Uri.parse(
+          "http://backend-semear.herokuapp.com/donor/api/${widget.idCategory}/"),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(jsonStr),
+    );
+    print("RESPONSE BODY ${response.body}");
+
+    if (response.statusCode == 200) {
+      final a = Donor.fromJson(jsonDecode(response.body));
+      print("AAA $a");
+      userBloc.addUser(a.user);
+      userBloc.addCategory(a.user!.id, a);
+      if (widget.user.id == userBloc.outMyId) {
+        userBloc.updateUser(a.user);
+      }
+      return a;
+    }
+    return null;
   }
 }

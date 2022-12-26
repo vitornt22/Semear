@@ -65,46 +65,30 @@ class _ProjectRegisterState extends State<ProjectRegister> {
   Future<Project?>? submitData() async {
     print("ADRESS MAP: $adressMap");
 
+    final jsonFile = jsonEncode({
+      "user": {
+        "username": usernameController.text.toString(),
+        "email": emailController.text.toString(),
+        "category": "project",
+        "can_post": true,
+        "password": passwordController.text.toString(),
+        "is_active": false
+      },
+      "adress": adressMap,
+      "church": null,
+      "id_church": idChurch,
+      "id_adress": idAdress,
+      "name": nameController.text.toString(),
+      "information": null
+    });
+
+    print("FINAL JSON $jsonFile");
+
     print('CHURCH: $idChurch');
     http.Response response = await http.post(
-      Uri.parse('https://backend-semear.herokuapp.com/project/api/'),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "user": {
-          "username": usernameController.text,
-          "email": emailController.text,
-          "category": "project",
-          "can_post": true,
-          "password": passwordController.text
-        },
-        "adress": adressMap,
-        "church": null,
-        "id_church": idChurch,
-        "id_adress": idAdress,
-        "name": nameController.text,
-        "information": null
-      }),
-    );
-
-    print(
-      jsonEncode({
-        "user": {
-          "username": usernameController.text,
-          "email": emailController.text,
-          "category": "missionary",
-          "can_post": true,
-          "password": passwordController.text
-        },
-        "id_church": idChurch,
-        "id_adress": idAdress,
-        "fullName": nameController.text,
-        "church": idChurch,
-        "adress": adressMap,
-        "name": nameController.text,
-        "following": [],
-        "follower": []
-      }),
-    );
+        Uri.parse('https://backend-semear.herokuapp.com/project/api/'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonFile);
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       return Project.fromJson(json.decode(response.body));
@@ -170,7 +154,7 @@ class _ProjectRegisterState extends State<ProjectRegister> {
                           Navigator.pop(context);
                         }
                       },
-                      onStepContinue: () {
+                      onStepContinue: () async {
                         print('Checked= $checkedValue');
 
                         if (_formKey[_currentStep].currentState!.validate()) {
@@ -233,20 +217,22 @@ class _ProjectRegisterState extends State<ProjectRegister> {
                                 showProgress = true;
                               });
                               if (checkedValue == true) {
-                                apiForm
+                                print("CHECKE E TUEEEE");
+                                await apiForm
                                     .getChurch(churchController.text)
                                     .then((value) {
                                   setState(() {
+                                    print("MYCHURCHH $value");
                                     print(value['id']);
                                     idAdress = value['adress']['id'];
                                     print('ADRESSS: $idAdress');
                                     idChurch = value['id'];
                                   });
-
-                                  submiDataFunction();
                                 });
                               } else {
-                                apiForm
+                                print("CHECKE E FALSEEEE");
+
+                                await apiForm
                                     .getChurch(churchController.text)
                                     .then((value) {
                                   setState(() {
@@ -261,9 +247,9 @@ class _ProjectRegisterState extends State<ProjectRegister> {
                                       "district": districtController.text
                                     };
                                   });
-                                  submiDataFunction();
                                 });
                               }
+                              submitDataFunction();
 
                               break;
                           }
@@ -298,7 +284,7 @@ class _ProjectRegisterState extends State<ProjectRegister> {
     );
   }
 
-  void submiDataFunction() {
+  void submitDataFunction() {
     _futureProject = submitData();
     setState(() {
       showProgress = false;
